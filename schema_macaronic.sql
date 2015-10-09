@@ -21,5 +21,5 @@ CREATE TABLE macaronicRecords(
     rule text, 
     state_before text,
     state_after text,
-    CREATEd_at datetime not null default CURRENT_TIMESTAMP
+    created_at datetime not null default CURRENT_TIMESTAMP
 )engine=innodb charset utf8;
