@@ -1,0 +1,3 @@
+[submodule "public/MacaronicParseUI"]
+	path = public/MacaronicParseUI
+	url = https://github.com/arendu/MacaronicParseUI.git
