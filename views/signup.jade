@@ -1,0 +1,19 @@
+doctype
+html
+    head
+        link(type='text/css', rel='stylesheet', href='/shell/css/style.css')
+        title #{title}
+    body.bodygrad
+        #menu.banner
+            h2 Register Form
+        h4.error #{errorMessage}
+        form(method='post', action='/signup')
+            p
+                label(for='username') username
+                input#username(type='text', name='username', placeholder='username', required='true')
+            p
+                label(for='password') password
+                input#password(type='text', name='password', placeholder='password', required='true')
+            p
+                input#signup(type='submit', name='signup', value='register')
+                a(href='/signin', title='sign in') sign in

@@ -1,0 +1,36 @@
+doctype
+html
+    head
+        title #{title}
+        link(type='text/css', rel='stylesheet', href='/MacaronicParseUI/css/coe.css')
+        link(type='text/css', rel='stylesheet', href='/shell/css/style.css')
+        script(type='text/javascript', src='/MacaronicParseUI/js/jquery-1.11.3.min.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/socket.io.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/messages.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/jquery-ui.min.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/collection-o-edits.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/jsonstrings-coe.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/underscore-min.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/jquery.straightline.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/jquery.curvedarrow.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/treemethods.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/coe-utils.js')
+        script.
+            $(document).ready(function () {
+                var socket = io();
+                ok_parse(page, sentences_per_page, $('#mainbody'), "#{user.username}", socket)
+                do_precomputations()
+            });
+    body.bodygrad
+        #menu.banner
+            h2 Home Page
+        ul
+            li
+                | Logged in as:
+                strong #{user.username}
+            li
+                a(href='/signout', title='sign out') sign out
+        #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+        button#prevbtn(type='button', onclick='gotoPrevPage()') prev
+        button#nextbtn(type='button', onclick='gotoNextPage()') next
+
