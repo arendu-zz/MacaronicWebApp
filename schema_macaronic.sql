@@ -1,8 +1,13 @@
+CREATE USER 'macaronic_admin'@'localhost' IDENTIFIED BY 'macaronic_password';
+create macaronicdb if not exists;
+GRANT ALL PRIVILEGES ON macaronicdb.* TO 'macaronic_admin'@'localhost';
+FLUSH PRIVILEGES;
+
 use macaronicdb;
 
 drop table if exists  macaronicUsers;
 
-create table if not exists macaronicUsers(
+create table macaronicUsers(
    id integer primary key auto_increment,
    username varchar(100) unique,
    password varchar(100)
