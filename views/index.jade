@@ -18,8 +18,7 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                ok_parse(page, sentences_per_page, $('#mainbody'), "#{user.username}", socket)
-                do_precomputations()
+                setup($('#mainbody'), "#{user.username}", socket)
             });
     body.bodygrad
         #menu.banner

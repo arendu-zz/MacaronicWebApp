@@ -81,6 +81,7 @@ app.use(route.notFound404);
 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var JsonSentences = require('./jsonsentences')
 
 io.on('connection', function (socket) {
 	console.log("in connection...")
@@ -96,6 +97,11 @@ io.on('connection', function (socket) {
 		});
 		//io.emit('chat message', msg);
 	});
+
+	socket.on('requestJsonSentences', function (msg) {
+		console.log('sending data to client...')
+		io.emit('JsonSentences', JsonSentences.Story1)
+	})
 });
 
 /*var server = app.listen(app.get('port'), function (err) {
