@@ -20,13 +20,18 @@ html
                 var socket = io();
                 setup($('#mainbody'), "#{user.username}", socket)
             });
+            var unescapeHTML = function(safe_str){
+                return 'hello'
+            }
+
     body.bodygrad
         #menu.banner
             h2 Home Page
         ul
             li
                 | Logged in as:
-                strong #{user.username}
+                strong #{user.displayname}
+                //strong unescapeHTML('#{user.username}')}
             li
                 a(href='/signout', title='sign out') sign out
         #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')

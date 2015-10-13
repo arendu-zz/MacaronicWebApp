@@ -15,15 +15,63 @@ var route = require('./route');
 var Model = require('./model');
 
 var app = express();
+function unescapeHTML(safe_str){
+	return decodeURI(safe_str).replace(/\\"/g, '"').replace(/\\'/g, "'");
+}
+
+function escapeHTML(unsafe_str) {
+	//return unsafe_str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+	//return unsafe_str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/\'/g, '&#39;'); // '&apos;' is not valid HTML 4
+	return encodeURI(unsafe_str).replace(/\"/g, '\"').replace(/\'/g, '\'');
+	//function mysql_real_escape_string (str) {
+	/*if (typeof  unsafe_str != 'string') {
+		return unsafe_str;
+	}
+	return unsafe_str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+		switch (char) {
+			case "\0":
+				return "\\0";
+			case "\x08":
+				return "\\b";
+			case "\x09":
+				return "\\t";
+			case "\x1a":
+				return "\\z";
+			case "\n":
+				return "\\n";
+			case "\r":
+				return "\\r";
+			case "\"":
+			case "'":
+			case "\\":
+			case "%":
+				return "\\" + char; // prepends a backslash to backslash, percent,
+			// and double/single quotes
+		}
+	});*/
+}
+
+/*function escapeHTML(unsafe_str) {
+	return encodeURI(unsafe_str).replace(/\"/g, '&quot;').replace(/\'/g, '&#39;');
+}*/
 
 passport.use(new LocalStrategy(function (username, password, done) {
+	console.log(username + ' un escaped')
+	username = escapeHTML(username)
+	password = escapeHTML(password)
+	console.log(username + ' escaped')
+	username_unescaped = unescapeHTML(username)
+	console.log(username_unescaped + ' unescaped again')
 	new Model.User({username: username}).fetch().then(function (data) {
 		var user = data;
 		if (user === null) {
+			console.log('tried to get username' + username + ' but no result found')
 			return done(null, false, {message: 'Invalid username or password'});
 		} else {
 			user = data.toJSON();
-			if (!bcrypt.compareSync(password, user.password)) {
+			//if (!bcrypt.compareSync(password, user.password)) {
+			if (password.localeCompare(user.password) != 0) {
+				console.log('tried to get match' + password + ' with ' + user.password)
 				return done(null, false, {message: 'Invalid username or password'});
 			} else {
 				return done(null, user);
@@ -33,20 +81,20 @@ passport.use(new LocalStrategy(function (username, password, done) {
 }));
 
 passport.serializeUser(function (user, done) {
+	console.log('serializeUser', user.username)
 	done(null, user.username);
 });
 
 passport.deserializeUser(function (username, done) {
+	console.log('deserializeUser', username)
 	new Model.User({username: username}).fetch().then(function (user) {
 		done(null, user);
 	});
 });
 
 app.set('port', process.env.PORT || 3030);
-
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
-
 app.use(express.static(__dirname + '/public/'));
 app.use(cookieParser());
 app.use(bodyParser());
