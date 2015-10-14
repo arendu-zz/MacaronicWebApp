@@ -1,7 +1,7 @@
-GRANT  USAGE ON *.* TO 'macaronic_admin'@'localhost';
-FLUSH PRIVILEGES;
+GRANT USAGE ON *.*  TO  'macaronic_admin'@'localhost';
 DROP USER 'macaronic_admin'@'localhost';
-CREATE USER 'macaronic_admin'@'localhost' IDENTIFIED BY 'macaronic_password';
+CREATE USER 'macaronic_admin'@'localhost' IDENTIFIED BY '';
+
 CREATE DATABASE IF NOT EXISTS macaronicdb;
 GRANT ALL PRIVILEGES ON macaronicdb.* TO 'macaronic_admin'@'localhost';
 FLUSH PRIVILEGES;
@@ -24,5 +24,5 @@ CREATE TABLE macaronicRecords(
     rule text, 
     state_before text,
     state_after text,
-    created_at fieldtype not null default CURRENT_TIMESTAMP
+    created_at datetime not null default CURRENT_TIMESTAMP
 )engine=innodb charset utf8;
