@@ -19,5 +19,3 @@ else
     sed "s/created_at fieldtype/created_at datetime/g" tmp > schema_macaronic.live.sql
 fi
 
-
-mysql -u root < schema_macaronic.live.sql
