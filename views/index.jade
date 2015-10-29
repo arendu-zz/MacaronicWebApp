@@ -22,12 +22,15 @@ html
                 var socket = io();
                 setup($('#mainbody'), "#{user.username}", socket)
             });
+
     body.bodygrad
         ul
             li
                 | Logged in as:
                 strong #{user.displayname}
-        #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
-        button#prevbtn(type='button', onclick='gotoPrevPage()') prev
-        button#nextbtn(type='button', onclick='gotoNextPage()') next
+                br
+                |Id:
+                strong #{user.username}
+        #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20; max-height:200px')
+
 

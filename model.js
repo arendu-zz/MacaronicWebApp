@@ -1,12 +1,12 @@
 var DB = require('./db').DB;
 
 var User = DB.Model.extend({
-   tableName: 'macaronicUsers',
+   tableName: 'mturkUsers',
    idAttribute: 'id',
 });
 
 var Records= DB.Model.extend({
-	tableName: 'macaronicRecords',
+	tableName: 'mturkRecords',
 	idAttribute: 'id',
 });
 
