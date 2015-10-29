@@ -30,7 +30,7 @@ app.use(route.notFound404);
 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var JsonSentences = require('./jsonsentences')
+var JsonSentences = require('./stories/jsonsentences')
 
 io.on('connection', function (socket) {
 	console.log("in connection...")
