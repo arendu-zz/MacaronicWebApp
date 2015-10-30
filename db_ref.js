@@ -1,10 +1,8 @@
-var Bookshelf = require('bookshelf');
-
-var config = { host: '', user: '', password: '', database: ''};
-
-var DB = Bookshelf.initialize({
-   client: 'mysql', 
-   connection: config
-});
+var config = {host: 'localhost', user: 'macaronic_admin', password: 'mturk_password', database: 'macaronicdb', charset: 'utf8'};
+var knex = require('knex')({
+							   client: 'mysql',
+							   connection: config
+						   });
+var DB = require('bookshelf')(knex);
 
 module.exports.DB = DB;

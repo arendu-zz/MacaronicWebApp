@@ -33,30 +33,45 @@ var io = require('socket.io')(http);
 var JsonSentences = require('./stories/jsonsentences')
 
 io.on('connection', function (socket) {
-	console.log("in connection...")
+	console.log("made socket connection to client...")
 	socket.on('logEvent', function (msg) {
-		//_.each(msg, function (value, key) {
-		//		console.log('\t', key, value)
-		//})
 		new Model.Records(msg).save().then(function (data) {
 			console.log("record status:" + data.attributes.id)
-			//_.each(data, function (v, k) {
-			//	console.log(k, v)
-			//})
 		});
-		//io.emit('chat message', msg);
 	});
 
-	socket.on('requestJsonSentences', function (msg) {
+	/*socket.on('requestJsonSentences', function (msg) {
 		console.log('sending data to client...')
 		io.emit('JsonSentences', JsonSentences.Story1)
-	})
+	})*/
 
-	socket.on('userProgress', function (msg) {
-		console.log('request for user info')
+	socket.on('requestUserProgress', function (msg) {
+		console.log('received user progress request...')
 		_.each(msg, function (v, k) {
 			console.log(k, v)
 		})
+		if (msg.workerId == '0') {
+			// a visitor or a mturk previewer
+			console.log("visitor or previewer")
+			io.emit('userProgress', {progress: 0, points_earned: 0})
+		} else {
+			console.log("mturk user.." + msg.workerId)
+			//a real mturk user
+			Model.User.where('workerId', msg.workerId).fetch().then(function (resData) {
+				if (resData != null) {
+					console.log("found workerId, returning user progress")
+					io.emit('userProgress', {progress: resData.progress, points_earned: resData.points_earned})
+				} else {
+					//insert new user in database
+					new Model.User({workerId: msg.workerId, displayname: msg.workerId, progress: 0, points_earned: 0}).save().then(function (data) {
+						console.log("created new mturk user..." + data.attributes.id)
+						io.emit('userProgress', {progress: data.attributes.progress, points_earned: data.attributes.points_earned})
+
+					})
+				}
+			})
+		}
+
 	})
 });
 

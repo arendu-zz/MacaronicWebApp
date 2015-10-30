@@ -16,6 +16,7 @@
       "passport": "*",
       "passport-local": "*",
       "mysql": "*",
-      "bookshelf": "0.5"
+      "bookshelf": "*",
+      "knex" : "*"
    }
 }

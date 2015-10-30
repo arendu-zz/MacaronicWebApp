@@ -6,7 +6,7 @@ if [ "$#" -ne 1 ]; then
 fi
 PASSWORD=$1
 npm install
-sed  "s/var config.*/var config = {host:'localhost', user:'macaronic_admin', password:'$PASSWORD', database:'macaronicdb'};/g" db_ref.js > db.js
+sed  "s/var config.*/var config = {host:'localhost', user:'macaronic_admin', password:'$PASSWORD', database:'macaronicdb', charset:'utf8'};/g" db_ref.js > db.js
 MYSQLVER=$(mysql --help | grep Ver | head -1 | awk '{print $5}' | sed 's/,//g')
 sed "s/IDENTIFIED BY.*/IDENTIFIED BY '$PASSWORD';/g" schema_macaronic.sql > tmp 
 case "$MYSQLVER" in
