@@ -19,8 +19,8 @@ function escapeHTML(unsafe_str) {
 }
 
 app.set('port', process.env.PORT || 3030);
-app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('views', __dirname + '/htmlviews');
+app.set('view engine', 'html');
 app.use(express.static(__dirname + '/public/'));
 
 // GET
@@ -50,6 +50,13 @@ io.on('connection', function (socket) {
 	socket.on('requestJsonSentences', function (msg) {
 		console.log('sending data to client...')
 		io.emit('JsonSentences', JsonSentences.Story1)
+	})
+
+	socket.on('userProgress', function (msg) {
+		console.log('request for user info')
+		_.each(msg, function (v, k) {
+			console.log(k, v)
+		})
 	})
 });
 
