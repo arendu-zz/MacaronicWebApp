@@ -47,25 +47,28 @@ io.on('connection', function (socket) {
 
 	socket.on('requestUserProgress', function (msg) {
 		console.log('received user progress request...')
-		_.each(msg, function (v, k) {
-			console.log(k, v)
-		})
 		if (msg.workerId == '0') {
 			// a visitor or a mturk previewer
 			console.log("visitor or previewer")
-			io.emit('userProgress', {progress: 0, points_earned: 0})
+			var content = JsonSentences.Story1[0]
+			io.emit('userProgress', { data: [content], progress: 0, points_earned: 0})
 		} else {
 			console.log("mturk user.." + msg.workerId)
 			//a real mturk user
 			Model.User.where('workerId', msg.workerId).fetch().then(function (resData) {
 				if (resData != null) {
 					console.log("found workerId, returning user progress")
-					io.emit('userProgress', {progress: resData.progress, points_earned: resData.points_earned})
+					_.each(resData, function (v, k) {
+						console.log(k, v)
+					})
+					var content = JsonSentences.Story1[resData.attributes.progress]
+					io.emit('userProgress', {data: [content], progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {
 					//insert new user in database
 					new Model.User({workerId: msg.workerId, displayname: msg.workerId, progress: 0, points_earned: 0}).save().then(function (data) {
 						console.log("created new mturk user..." + data.attributes.id)
-						io.emit('userProgress', {progress: data.attributes.progress, points_earned: data.attributes.points_earned})
+						var content = JsonSentences.Story1[0]
+						io.emit('userProgress', {data: [content], progress: data.attributes.progress, points_earned: data.attributes.points_earned})
 
 					})
 				}
