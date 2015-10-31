@@ -45,6 +45,16 @@ io.on('connection', function (socket) {
 		io.emit('JsonSentences', JsonSentences.Story1)
 	})*/
 
+	socket.on('updatePointsEarned', function (msg) {
+		console.log('got completion from user!')
+
+		new Model.User({workerId: msg.workerId}).save({displayname: msg.workerId, points_earned: msg.points_earned, progress: msg.progress}).then(function (data) {
+			_.each(data, function (v, k) {
+				console.log(k, v)
+			})
+		})
+	})
+
 	socket.on('requestUserProgress', function (msg) {
 		console.log('received user progress request...')
 		if (msg.workerId == '0') {
