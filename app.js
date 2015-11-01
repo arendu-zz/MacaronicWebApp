@@ -47,11 +47,10 @@ io.on('connection', function (socket) {
 
 	socket.on('updatePointsEarned', function (msg) {
 		console.log('got completion from user!')
-
-		new Model.User({workerId: msg.workerId}).save({displayname: msg.workerId, points_earned: msg.points_earned, progress: msg.progress}).then(function (data) {
-			_.each(data, function (v, k) {
-				console.log(k, v)
-			})
+		new Model.User().where({workerId: msg.workerId}).save({displayname: msg.workerId, points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
+			console.log('new stuff..')
+			var content = JsonSentences.Story1[data.attributes.progress]
+			io.emit('userProgress', {data: [content], progress: data.attributes.progress, points_earned: data.attributes.points_earned})
 		})
 	})
 

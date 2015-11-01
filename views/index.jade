@@ -21,15 +21,20 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup($('#mainbody'), "#{user.username}", "#{user.displayname}", socket)
+                setup($('#page'), "#{user.username}", "#{user.displayname}", socket)
             });
     body.bodygrad
-        ul
-            li
-                | Logged in as:
-                strong #{user.displayname}
-                br
-                | Id:
-                strong #{user.username}
-                br
-        #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+        #page.pageContainer
+            ul
+                li
+                    | Id:
+                    span#workerId.bold #{user.username}
+                    br
+                    | Points:
+                    spans#pointsEarned.bold #{user.username}
+                    br
+                    | Type:
+                    span#userType.bold #{user.displayname}
+
+            #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+            button#confirm(type='button',  onclick='completedTask()') Submit
