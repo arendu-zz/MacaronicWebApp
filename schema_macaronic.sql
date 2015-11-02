@@ -1,7 +1,3 @@
-GRANT USAGE ON *.*  TO  'macaronic_admin'@'localhost';
-DROP USER 'macaronic_admin'@'localhost';
-CREATE USER 'macaronic_admin'@'localhost' IDENTIFIED BY '';
-
 CREATE DATABASE IF NOT EXISTS macaronicdb;
 GRANT ALL PRIVILEGES ON macaronicdb.* TO 'macaronic_admin'@'localhost';
 FLUSH PRIVILEGES;
