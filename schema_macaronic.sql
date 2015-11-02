@@ -19,8 +19,20 @@ CREATE TABLE mturkRecords(
     displayname varchar(255) not null,
     rule text, 
     state_before text,
+    visible_before text, 
     state_after text,
+    visible_after text,
     created_at fieldtype not null default CURRENT_TIMESTAMP
+)engine=innodb charset utf8;
+
+DROP TABLE if exists mturkTranslations;
+CREATE TABLE mturkTranslations(
+  id integer primary key auto_increment,
+  workerId varchar(255) not null,
+  state text not null,
+  input text not null,
+  translation text not null,
+  created_at fieldtype not null default CURRENT_TIMESTAMP
 )engine=innodb charset utf8;
 
 

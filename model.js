@@ -10,7 +10,13 @@ var Records= DB.Model.extend({
 	idAttribute: 'id',
 });
 
+var Translations = DB.Model.extend({
+	tableName: 'mturkTranslations',
+	idAttribute: 'id',
+})
+
 module.exports = {
    User: User,
-   Records: Records
+   Records: Records,
+   Translations: Translations
 };
