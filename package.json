@@ -17,6 +17,7 @@
       "passport-local": "*",
       "mysql": "*",
       "bookshelf": "*",
-      "knex" : "*"
+      "yargs": "*",
+      "knex" : "0.8"
    }
 }
