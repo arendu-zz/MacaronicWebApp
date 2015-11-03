@@ -41,6 +41,8 @@ html
                     br
                     | Type:
                     span#userType.bold #{user.learnerType}
+                    | AssignmentId
+                    span#assignmentIdSpan.bold #{assignmentId}
             form#macaronicForm(action='https://workersandbox.mturk.com/mturk/externalSubmit', method='post')
                 input#assignmentId(type='hidden', value="#{assignmentId}")
                 #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
