@@ -21,8 +21,17 @@ app.get('/', route.index);
 
 app.use(route.notFound404);
 
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+//var http = require('http').Server(app);
+fs = require('fs')
+var sslOptions = {
+  key: fs.readFileSync('./ssl/server.key'),
+  cert: fs.readFileSync('./ssl/server.crt'),
+  ca: fs.readFileSync('./ssl/ca.crt'),
+  requestCert: true,
+  rejectUnauthorized: false
+};
+var https = require('https').createServer(sslOptions, app);
+var io = require('socket.io')(https);
 var JsonSentences = require('./stories/jsonsentences')
 var sentences_per_page = 2
 
@@ -90,9 +99,9 @@ io.on('connection', function (socket) {
 	})
 });
 
-var server = http.listen(app.get('port'), function (err) {
+var server = https.listen(app.get('port'), function (err) {
 	if (err) throw err;
-	var message = 'Server is running @ http://localhost:' + server.address().port;
+	var message = 'Server is running @ https://localhost:' + server.address().port;
 	console.log(message);
 });
 
