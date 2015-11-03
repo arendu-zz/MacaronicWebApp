@@ -56,8 +56,6 @@ html
                     span#userType.bold #{user.learnerType}
                     br
                     | AssignmentId
-                    span#assignmentIdSpan.bold #{assignmentId}
-            form#macaronicForm(action='https://workersandbox.mturk.com/mturk/externalSubmit', method='post')
-                input(type='hidden', name="assignmentId", value="#{assignmentId}")
-                #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
-                input#confirmInput(type='submit', value='Submit',  onclick='post_form()')
+                    span#assignmentIdSpan.bold #{user.assignmentId}
+            #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+            button#confirmInput(type='submit', value='Next',  onclick='post({assignmentId: #{user.assignmentId})')
