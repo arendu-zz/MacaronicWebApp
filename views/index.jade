@@ -21,20 +21,27 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup($('#page'), "#{user.username}", "#{user.displayname}", socket)
+                setup($('#page'), "#{user.workerId}", "#{assignmentId}", socket)
             });
+            function post_form() {
+                completedTask()
+                var form = document.getElementById('macaronicForm')
+                form.submit()
+            }
+
     body.bodygrad
         #page.pageContainer
             ul
                 li
                     | Id:
-                    span#workerId.bold #{user.username}
+                    span#workerId.bold #{user.workerId}
                     br
                     | Points:
-                    spans#pointsEarned.bold #{user.username}
+                    spans#pointsEarned.bold #{user.workerId}
                     br
                     | Type:
-                    span#userType.bold #{user.displayname}
-
-            #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
-            button#confirm(type='button',  onclick='completedTask()') Submit
+                    span#userType.bold #{user.learnerType}
+            form#macaronicForm(action='https://workersandbox.mturk.com/mturk/externalSubmit', method='post')
+                input#assignmentId(type='hidden', value="#{assignmentId}")
+                #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+                input#confirmInput(type='submit', value='Submit',  onclick='post_form()')

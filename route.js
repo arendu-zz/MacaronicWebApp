@@ -12,13 +12,13 @@ var index = function (req, res, next) {
 	})
 	if (req.query.hasOwnProperty('assignmentId')) {
 		if (req.query.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
-			res.render('index', {title: "mturk page", user: {displayname: 'previewer', username: '0'}})
+			res.render('index', {title: "mturk page", assignmentId: req.query.assignmentId, user: {learnerType: 'previewer', workerId: '0'}})
 		} else {
 			//everything is cool...
-			res.render('index', {title: "mturk page", user: {displayname: 'learner', username: req.query.workerId}})
+			res.render('index', {title: "mturk page", assignmentId: req.query.assignmentId, user: {learnerType: 'learner', workerId: req.query.workerId}})
 		}
 	} else {
-		res.render('index', {title: "mturk page", user: {displayname: 'visitor', username: '0'}})
+		res.render('index', {title: "mturk page", assignmentId: null, user: {learnerType: 'visitor', workerId: '0'}})
 	}
 
 };
