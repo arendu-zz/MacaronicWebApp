@@ -22,6 +22,13 @@ html
             $(document).ready(function () {
                 var socket = io();
                 setup($('#page'), "#{user.workerId}", "#{assignmentId}", socket)
+                if ("#{assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
+                    $('#confirmInput').prop('disabled', true)
+                    $('#confirmInput').attr('value', 'Accept HIT to submit')
+                }else{
+                    $('#confirmInput').prop('disabled', false)
+                    $('#confirmInput').attr('value', 'submit')
+                }
             });
             function post_it(parameters) {
                 console.log("called post...", parameters)
@@ -51,4 +58,4 @@ html
                     | Type:
                     span#userType.bold #{user.learnerType}
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
-            button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})") Next
+            button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})")
