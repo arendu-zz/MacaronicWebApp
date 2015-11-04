@@ -37,7 +37,7 @@ if (yargs.host == 'ec2') {
 }
 var io = require('socket.io')(https);
 var JsonSentences = require('./stories/jsonsentences')
-var sentences_per_page = 2
+var sentences_per_page = 5
 
 io.on('connection', function (socket) {
 
@@ -66,7 +66,7 @@ io.on('connection', function (socket) {
         new Model.User().where({workerId: msg.workerId}).save({displayname: msg.workerId, points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
             console.log('sending new content...')
                 var content = sliceContent(JsonSentences.Story1, parseInt(data.attributes.progress), sentences_per_page)
-                io.to(clientId).emit('userProgress', {data: content, progress: data.attributes.progress, points_earned: data.attributes.points_earned})
+               // io.to(clientId).emit('userProgress', {data: content, progress: data.attributes.progress, points_earned: data.attributes.points_earned})
         })
     })
 

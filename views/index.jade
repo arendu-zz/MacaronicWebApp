@@ -37,6 +37,7 @@ html
                     console.log("name", key , "val", value);
                 });
                 $(document.body).append(form);
+                completedTask()
                 form.submit();
             }
 
@@ -44,16 +45,10 @@ html
         #page.pageContainer
             ul
                 li
-                    | Id:
-                    span#workerId.bold #{user.workerId}
-                    br
                     | Points:
                     spans#pointsEarned.bold #{user.workerId}
                     br
                     | Type:
                     span#userType.bold #{user.learnerType}
-                    br
-                    | AssignmentId
-                    span#assignmentIdSpan.bold #{user.assignmentId}
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
-            button#confirmInput(type='button',  onclick="post_it( foo: 'bar'{assignmentId: #{user.assignmentId}})")Next
+            button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})") Next

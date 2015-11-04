@@ -20,3 +20,4 @@ case "$MYSQLVER" in
     sed "s/created_at fieldtype/created_at datetime/g" tmp > schema_macaronic.live.sql
 	;;
 esac
+mysql -u root < schema_macaronic.live.sql
