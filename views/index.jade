@@ -22,12 +22,14 @@ html
             $(document).ready(function () {
                 var socket = io();
                 setup($('#page'), "#{user.workerId}", "#{assignmentId}", socket)
-                if ("#{assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
+                if ("#{user.assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
+                    console.log('assignmet disabled' + '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', true)
-                    $('#confirmInput').attr('value', 'Accept HIT to submit')
+                    $('#confirmInput').html('Accept HIT to submit')
                 }else{
+                    console.log('assignent enabled!!'+ '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', false)
-                    $('#confirmInput').attr('value', 'submit')
+                    $('#confirmInput').html('submit')
                 }
             });
             function post_it(parameters) {
