@@ -23,21 +23,19 @@ html
                 var socket = io();
                 setup($('#page'), "#{user.workerId}", "#{assignmentId}", socket)
             });
-            function post(parameters) {
-
+            function post_it(parameters) {
+                console.log("called post...", parameters)
                 var form = $('<form></form>');
-                    form.attr("method", "post");
+                form.attr("method", "post");
                 form.attr("action", "https://workersandbox.mturk.com/mturk/externalSubmit");
-                    $.each(parameters, function(key, value) {
+                $.each(parameters, function(key, value) {
                     var field = $('<input></input>');
                     field.attr("type", "hidden");
                     field.attr("name", key);
                     field.attr("value", value);
                     form.append(field);
                     console.log("name", key , "val", value);
-                    });
-                    // The form needs to be a part of the document in
-                    // order for us to be able to submit it.
+                });
                 $(document.body).append(form);
                 form.submit();
             }
@@ -58,4 +56,4 @@ html
                     | AssignmentId
                     span#assignmentIdSpan.bold #{user.assignmentId}
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
-            button#confirmInput(type='submit', value='Next',  onclick='post({assignmentId: #{user.assignmentId}})')
+            button#confirmInput(type='button',  onclick="post_it( foo: 'bar'{assignmentId: #{user.assignmentId}})")Next
