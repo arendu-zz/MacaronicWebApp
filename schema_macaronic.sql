@@ -9,7 +9,7 @@ CREATE TABLE mturkUsers(
     workerId varchar(255) unique,
     displayname varchar(255) not null,
     progress integer not null default 0,
-    points_earned integer not null default 0
+    points_earned float not null default 0
 )engine=innodb charset utf8;
 
 DROP TABLE IF EXISTS mturkRecords;
