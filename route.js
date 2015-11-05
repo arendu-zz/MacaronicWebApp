@@ -14,7 +14,6 @@ var index = function (req, res, next) {
 		if (req.query.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
 			res.render('index', {title: "mturk page", user: { assignmentId: req.query.assignmentId, learnerType: 'previewer', workerId: req.query.workerId}})
 		} else {
-			//everything is cool...
 			res.render('index', {title: "mturk page", user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', workerId: req.query.workerId}})
 		}
 	} else {
