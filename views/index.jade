@@ -18,6 +18,7 @@ html
         script(type='text/javascript', src='/MacaronicParseUI/js/coe-utils.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/d3.min.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/jquery.d3.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/bleu.js')
         script.
             $(document).ready(function () {
                 var socket = io();
@@ -55,7 +56,7 @@ html
             ul
                 li
                     | Points:
-                    spans#pointsEarned.bold #{user.workerId}
+                    spans#pointsEarned.bold
                     br
                     | Type:
                     span#userType.bold #{user.learnerType}
