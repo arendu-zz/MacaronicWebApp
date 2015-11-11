@@ -77,11 +77,12 @@ io.on('connection', function (socket) {
 			Model.User.where('workerId', msg.workerId).fetch().then(function (resData) {
 				if (resData != null) {
 					console.log("no assignment but found user, with progress ", resData.attributes.progress);
-					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
+					console.log(JsonSentences.Story1.length)
+					var content = sliceContent(JsonSentences.Story1, 9, sentences_per_page)
 					io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {
 					console.log("no assignment no user")
-					var content = sliceContent(JsonSentences.Story1, 0, sentences_per_page)
+					var content = sliceContent(JsonSentences.Story1, 9,  sentences_per_page)
 					io.to(clientId).emit('userProgress', { data: content, progress: 0, points_earned: 0})
 				}
 			})
@@ -92,7 +93,7 @@ io.on('connection', function (socket) {
 			//a real mturk user
 			Model.User.where('workerId', msg.workerId).fetch().then(function (resData) {
 				if (resData != null) {
-					console.log("found workerId, returning user progress")
+					console.log("found workerId:" + msg.wordkerId + "returning user progress" + resData.attributes.progress)
 					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
 					io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {

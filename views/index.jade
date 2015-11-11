@@ -22,7 +22,7 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup($('#page'), "#{user.workerId}", "#{assignmentId}", socket)
+                setup($('#page'), "#{user.workerId}", "#{user.assignmentId}", socket)
                 if ("#{user.assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
                     console.log('assignmet disabled' + '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', true)
