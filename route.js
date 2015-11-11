@@ -6,7 +6,6 @@ var _ = require('underscore');
 var Model = require('./model');
 // index
 var index = function (req, res, next) {
-	console.log("rqe url query" + req.query.gameid)
 	_.each(Object.keys(req.query), function (k) {
 		console.log(k + ' ' + req.query[k])
 	})
