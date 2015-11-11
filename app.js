@@ -12,7 +12,6 @@ var yargs = require('yargs').usage('Usage: $0 --host [ec2,localhost]').demand('h
 
 // setup app
 var app = express();
-app.set('port', process.env.PORT || 443);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.static(__dirname + '/public/'));
@@ -23,6 +22,7 @@ app.get('/', route.index);
 app.use(route.notFound404);
 var https = null
 if (yargs.host == 'ec2') {
+	app.set('port', process.env.PORT || 443);
 	fs = require('fs')
 	var sslOptions = {
 		key: fs.readFileSync('./ssl/privatekey.key'),
@@ -30,6 +30,7 @@ if (yargs.host == 'ec2') {
 	};
 	https = require('https').createServer(sslOptions, app);
 } else if (yargs.host == 'localhost') {
+	app.set('port', process.env.PORT || 3030);
 	https = require('http').createServer(app);
 }
 var io = require('socket.io')(https);
@@ -69,15 +70,17 @@ io.on('connection', function (socket) {
 
 	socket.on('requestUserProgress', function (msg) {
 		console.log('received user progress request...')
-                _.each(msg, function(v, k) { console.log(k,v);});
+		_.each(msg, function (v, k) {
+			console.log(k, v);
+		});
 		if (msg.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
 			Model.User.where('workerId', msg.workerId).fetch().then(function (resData) {
 				if (resData != null) {
-                                        console.log("no assignment but found user, with progress " , resData.attributes.progress);
+					console.log("no assignment but found user, with progress ", resData.attributes.progress);
 					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
 					io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {
-                                        console.log("no assignment no user")
+					console.log("no assignment no user")
 					var content = sliceContent(JsonSentences.Story1, 0, sentences_per_page)
 					io.to(clientId).emit('userProgress', { data: content, progress: 0, points_earned: 0})
 				}
@@ -109,15 +112,20 @@ io.on('connection', function (socket) {
 
 var server = https.listen(app.get('port'), function (err) {
 	//if (err) throw err;
-	try {
-	console.log('Old user id' + process.getuid() + ', Old group id' + process.getgid())
-	process.setgid('wheel')
-	process.setuid('ec2-user')
-	console.log('New user id' + process.getuid() + ' New group id' + process.getgid())
-	}catch (err) {
-		throw err
+	if (yargs.host == 'ec2') {
+		try {
+			console.log('Old user id' + process.getuid() + ', Old group id' + process.getgid())
+			process.setgid('wheel')
+			process.setuid('ec2-user')
+			console.log('New user id' + process.getuid() + ' New group id' + process.getgid())
+		} catch (err) {
+			throw err
+		}
+		var message = 'Server is running @ https://macaroniclearning.com:' + server.address().port;
+	} else {
+		var message = 'Server is running @ https://localhost:' + server.address().port;
 	}
-	var message = 'Server is running @ https://localhost:' + server.address().port;
+
 	console.log(message);
 });
 
