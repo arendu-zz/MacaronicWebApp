@@ -12,7 +12,7 @@ var index = function (req, res, next) {
 	if (req.query.hasOwnProperty('assignmentId')) {
 		if (req.query.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
 			console.log("here!!!")
-			res.render('index', {title: "mturk page", user: { assignmentId: req.query.assignmentId, learnerType: 'previewer', workerId: req.query.workerId}})
+			res.render('preview', {title: "mturk page", user: { assignmentId: req.query.assignmentId, learnerType: 'previewer', workerId: req.query.workerId}})
 		} else {
 			res.render('index', {title: "mturk page", user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', workerId: req.query.workerId}})
 		}

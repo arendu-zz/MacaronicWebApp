@@ -22,11 +22,11 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup($('#page'), "#{user.workerId}", "#{user.assignmentId}", socket,false)
+                setup($('#page'), "#{user.workerId}", "#{user.assignmentId}", socket, true)
                 if ("#{user.assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
                     console.log('assignmet disabled' + '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', true)
-                    $('#confirmInput').html('Accept HIT to submit')
+                    $('#confirmInput').html('Accept HIT to view tasks')
                 }else{
                     console.log('assignent enabled!!'+ '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', false)
@@ -53,13 +53,18 @@ html
 
     body.bodygrad
         #page.pageContainer
-            ul
-                li
-                    | Points:
-                    spans#pointsEarned.bold
-                    br
-                    | Type:
-                    span#userType.bold #{user.learnerType}
-            #isPreview
+            h2
+                |Instructions
+            p
+                | The sentence below is an example.
+            p
+                |The goal is to guess the translation of a foreign sentence.
+            p
+                |Clicking on words in the foreign sentence reveals clues, but at the cost of points(grey).
+            p
+                | Enter your translation guess in the text box below the foregin sentence. A good guess earns points(green).
+            p
+                | Collect as many points as possible to receive a bonus reward.
+
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
             button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})")
