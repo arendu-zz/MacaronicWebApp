@@ -1,3 +1,6 @@
+//experiment vars
+var max_hits = 2
+
 // vendor libraries
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -82,7 +85,7 @@ io.on('connection', function (socket) {
 					io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {
 					console.log("no assignment no user")
-					var content = sliceContent(JsonSentences.Story1, 9,  sentences_per_page)
+					var content = sliceContent(JsonSentences.Story1, 9, sentences_per_page)
 					io.to(clientId).emit('userProgress', { data: content, progress: 0, points_earned: 0})
 				}
 			})
@@ -95,7 +98,12 @@ io.on('connection', function (socket) {
 				if (resData != null) {
 					console.log("found workerId:" + msg.wordkerId + "returning user progress" + resData.attributes.progress)
 					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
-					io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
+					if (parseInt(resData.attributes.progress) > max_hits) {
+						app.get('/', route.thankyou)
+					} else {
+						io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
+					}
+
 				} else {
 					//insert new user in database
 					new Model.User({workerId: msg.workerId, displayname: msg.workerId, progress: 0, points_earned: 0}).save().then(function (data) {

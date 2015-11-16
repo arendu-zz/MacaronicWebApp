@@ -22,6 +22,10 @@ var index = function (req, res, next) {
 
 };
 
+var thankyou = function (req, res, next) {
+	res.render('thankyou', {title: "mturk page"})
+}
+
 // 404 not found
 var notFound404 = function (req, res, next) {
 	res.status(404);
@@ -33,3 +37,6 @@ module.exports.index = index;
 
 // 404 not found
 module.exports.notFound404 = notFound404;
+
+//thank you
+module.exports.thankyou = thankyou
