@@ -1,5 +1,5 @@
 //experiment vars
-var max_hits = 2
+var max_hits = 1
 
 // vendor libraries
 var express = require('express');
@@ -96,11 +96,13 @@ io.on('connection', function (socket) {
 			//a real mturk user
 			Model.User.where('workerId', msg.workerId).fetch().then(function (resData) {
 				if (resData != null) {
-					console.log("found workerId:" + msg.wordkerId + "returning user progress" + resData.attributes.progress)
+					console.log("found workerId:" + msg.workerId + " returning user progress" + resData.attributes.progress)
 					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
 					if (parseInt(resData.attributes.progress) > max_hits) {
-						app.get('/', route.thankyou)
+						console.log("show thank you page...")
+						io.to(clientId).emit('thankyou')
 					} else {
+						console.log("show next set of hit questions, ", max_hits, resData.attributes.progress)
 						io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 					}
 
