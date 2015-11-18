@@ -9,6 +9,11 @@ html {
 
 }
 
+.tab {
+    padding-left: 30px;
+    padding-top: 0px;
+}
+
 .banner {
     width: 100%;
     padding: 0px;
@@ -44,5 +49,5 @@ ul li {
 }
 
 ul li:last-child {
-	margin-left: auto;
+    margin-left: auto;
 }

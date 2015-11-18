@@ -84,6 +84,12 @@ app.post('/signup', route.signUpPost);
 // GET
 app.get('/signout', route.signOut);
 
+app.get('/logout', function (req, res) {
+	console.log("trying to logout....")
+	req.session.destroy()
+	req.logout()
+	res.redirect('/signin');
+});
 /********************************/
 // 404 not found
 app.use(route.notFound404);
@@ -91,6 +97,7 @@ app.use(route.notFound404);
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var JsonSentences = require('./stories/jsonsentences')
+var JsonSentencesPreview = require('./stories/jsonsentences-preview')
 
 io.on('connection', function (socket) {
 	var clientId = socket.id
@@ -103,20 +110,28 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('completedTask', function (msg) {
-		console.log('got completion from user!')
-		var listTLM = msg.hitlog
-		_.each(listTLM, function (tlm) {
-			new Model.Translations({username: tlm.workerId, state: "blank", input: tlm.input, translation: unescapeHTML(tlm.translation)}).save().then(function (data) {
-				console.log("new translation added:" + data.attributes.id)
+
+		if (msg.workerId === "GUEST") {
+			guestThankyou(clientId, io)
+		} else {
+			console.log('got completion from user!')
+			var listTLM = msg.hitlog
+			_.each(listTLM, function (tlm) {
+				new Model.Translations({username: tlm.workerId, state: "blank", input: tlm.input, translation: unescapeHTML(tlm.translation)}).save().then(function (data) {
+					console.log("new translation added:" + data.attributes.id)
+				})
 			})
-		})
-		new Model.User().where({username: msg.workerId}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
-			Model.User.where('username', msg.workerId).fetch().then(function (resData) {
-				console.log('sending new content...')
-				var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
-				nextHit(resData, content, clientId, io)
+
+			new Model.User().where({username: msg.workerId}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
+				Model.User.where('username', msg.workerId).fetch().then(function (resData) {
+					console.log('sending new content...')
+					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
+
+					nextHit(resData, content, clientId, io)
+				})
 			})
-		})
+		}
+
 	})
 
 	socket.on('requestUserProgress', function (msg) {
@@ -124,7 +139,11 @@ io.on('connection', function (socket) {
 		Model.User.where('username', msg.workerId).fetch().then(function (resData) {
 			if (resData != null) {
 				console.log("found workerId:" + msg.workerId + " returning user progress" + resData.attributes.progress)
-				var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
+				if (msg.workerId === "GUEST") {
+					var content = sliceContent(JsonSentencesPreview.Preview, 0, sentences_per_page)
+				} else {
+					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
+				}
 				nextHit(resData, content, clientId, io)
 
 			} else {
@@ -155,12 +174,17 @@ function escapeHTML(unsafe_str) {
 	return encodeURI(unsafe_str).replace(/\"/g, '\"').replace(/\'/g, '\'');
 }
 
+function guestThankyou(clientId, io) {
+	io.to(clientId).emit('thankyou', {username: "GUEST"})
+	return  true;
+}
+
 function nextHit(resData, content, clientId, io) {
 	if (parseInt(resData.attributes.progress) > max_hits) {
-		console.log("show thank you page...")
+		console.log("show thank you page to user:", resData.attributes.username)
 		io.to(clientId).emit('thankyou', {points_earned: resData.attributes.points_earned, confirmation: resData.attributes.confirmation_string})
 	} else {
-		console.log("show next set of hit questions, ", max_hits, resData.attributes.progress)
+		console.log("show next set of hit questions, ", max_hits, resData.attributes.progress, resData.attributes.username)
 		io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 	}
 
