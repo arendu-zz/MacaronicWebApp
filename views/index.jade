@@ -38,5 +38,7 @@ html
                     br
                     | Points:
                     span#pointsEarned.bold
+                    br
+                    a(href='/logout') logout
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
             button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})") Submit

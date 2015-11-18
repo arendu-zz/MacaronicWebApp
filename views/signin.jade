@@ -3,18 +3,38 @@ html
     head
         link(type='text/css', rel='stylesheet', href='/shell/css/style.css')
         title #{title}
+        script(type='text/javascript', src='/MacaronicParseUI/js/jquery-1.11.3.min.js')
+        script.
+                   $(document).ready(function () {
+                    });
+                    function guest_login() {
+                        console.log("attept guest login");
+                        $('#username').val("GUEST")
+                        $('#password').val("GUEST")
+                        $('#loginForm').submit()
+                    }
     body.bodygrad
         #menu.banner
             h2 Sign In Form
-        h4.error #{errorMessage}
-        form(method='post', action='/signin')
+        h3 Existing User:
+        #tab1.tab
+            form#loginForm(method='post', action= '/signin')
+                p
+                    label(for='username') username
+                    input#username(type='text', name='username', placeholder='username', required='true')
+                p
+                    label(for='password') password
+                    input#password(type='password', name='password', placeholder='password', required='true')
+                h5.error #{errorMessage}
+                p
+                    input#signin(type='submit', name='signin', value='sign in')
+        h3 New User:
+        #tab2.tab
             p
-                label(for='username') username
-                input#username(type='text', name='username', placeholder='username', required='true')
-            p
-                label(for='password') password
-                input#password(type='password', name='password', placeholder='password', required='true')
-            p
-                input#signin(type='submit', name='signin', value='sign in')
+                | Sign up here:
                 a(href='/signup', title='register') register
-
+        h3 Preview Task as Guest:
+        #tab3.tab
+            p
+                | Enter as guest
+                button#guestLogin(type='button',  onclick="guest_login()") Guest
