@@ -2,9 +2,9 @@ CREATE DATABASE IF NOT EXISTS macaronicdb;
 
 USE macaronicdb;
 
-DROP TABLE IF EXISTS mturkUsers;
+DROP TABLE IF EXISTS mturkUsersAlt;
 
-CREATE TABLE mturkUsers(
+CREATE TABLE mturkUsersAlt(
     id integer primary key auto_increment,
     workerId varchar(255) unique,
     displayname varchar(255) not null,
@@ -12,8 +12,8 @@ CREATE TABLE mturkUsers(
     points_earned float not null default 0
 )engine=innodb charset utf8;
 
-DROP TABLE IF EXISTS mturkRecords;
-CREATE TABLE mturkRecords(
+DROP TABLE IF EXISTS mturkRecordsAlt;
+CREATE TABLE mturkRecordsAlt(
     id integer primary key auto_increment,
     workerId varchar(255) not null,
     displayname varchar(255) not null,
@@ -26,8 +26,8 @@ CREATE TABLE mturkRecords(
     created_at fieldtype not null default CURRENT_TIMESTAMP
 )engine=innodb charset utf8;
 
-DROP TABLE if exists mturkTranslations;
-CREATE TABLE mturkTranslations(
+DROP TABLE if exists mturkTranslationsAlt;
+CREATE TABLE mturkTranslationsAlt(
   id integer primary key auto_increment,
   workerId varchar(255) not null,
   state text not null,
