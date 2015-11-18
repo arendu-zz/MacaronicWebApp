@@ -12,7 +12,7 @@ CREATE TABLE mturkUsersAltInd(
     points_earned float not null default 0,
     confirmation_string varchar(255) unique
 )engine=innodb charset utf8;
-INSERT INTO mturkUsersInd (username, password, confirmation_string) VALUES ("GUEST", "GUEST", "GUEST");
+INSERT INTO mturkUsersAltInd (username, password, confirmation_string) VALUES ("GUEST", "GUEST", "GUEST");
 DROP TABLE IF EXISTS mturkRecordsAltInd;
 CREATE TABLE mturkRecordsAltInd(
     id integer primary key auto_increment,
