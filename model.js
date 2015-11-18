@@ -1,17 +1,17 @@
 var DB = require('./db').DB;
 
 var User = DB.Model.extend({
-   tableName: 'mturkUsers',
+   tableName: 'mturkUsersAltInd',
    idAttribute: 'id',
 });
 
 var Records= DB.Model.extend({
-	tableName: 'mturkRecords',
+	tableName: 'mturkRecordsAltInd',
 	idAttribute: 'id',
 });
 
 var Translations = DB.Model.extend({
-	tableName: 'mturkTranslations',
+	tableName: 'mturkTranslationsAltInd',
 	idAttribute: 'id',
 })
 
