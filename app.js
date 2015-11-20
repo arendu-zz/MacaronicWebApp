@@ -1,6 +1,8 @@
 //experiment vars
 var sentences_per_page = 5
 var max_hits = 3
+exports.ui_version = 0
+
 // vendor libraries
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -10,6 +12,8 @@ var bcrypt = require('bcrypt-nodejs');
 var passport = require('passport');
 var _ = require('underscore');
 var LocalStrategy = require('passport-local').Strategy;
+var yargs = require('yargs').usage('Usage: $0 --uiver [1,0] --port [3000 ... 4000]').demand(['uiver', 'port']).argv;
+exports.ui_version = yargs.uiver
 
 // routes
 var route = require('./route');
@@ -55,7 +59,7 @@ passport.deserializeUser(function (username, done) {
 	});
 });
 
-app.set('port', process.env.PORT || 3030);
+app.set('port', process.env.PORT || yargs.port);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.static(__dirname + '/public/'));
@@ -111,19 +115,21 @@ io.on('connection', function (socket) {
 
 	socket.on('completedTask', function (msg) {
 
-		if (msg.workerId === "GUEST") {
+		if (msg.username === "GUEST") {
 			guestThankyou(clientId, io)
 		} else {
 			console.log('got completion from user!')
 			var listTLM = msg.hitlog
 			_.each(listTLM, function (tlm) {
-				new Model.Translations({username: tlm.workerId, state: "blank", input: tlm.input, translation: unescapeHTML(tlm.translation)}).save().then(function (data) {
+				tlm.translation = unescapeHTML(tlm.translation)
+				console.log("trying to log tlm!!!!!!!!!!!!!");
+				new Model.Translations({username: tlm.username, ui_version: parseInt(tlm.ui_version), state: tlm.state, input: tlm.input, translation: unescapeHTML(tlm.translation)}).save().then(function (data) {
 					console.log("new translation added:" + data.attributes.id)
 				})
 			})
 
-			new Model.User().where({username: msg.workerId}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
-				Model.User.where('username', msg.workerId).fetch().then(function (resData) {
+			new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
+				Model.User.where('username', msg.username).fetch().then(function (resData) {
 					console.log('sending new content...')
 					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
 
@@ -135,11 +141,11 @@ io.on('connection', function (socket) {
 	})
 
 	socket.on('requestUserProgress', function (msg) {
-		console.log("mturk user with workerId .." + msg.workerId)
-		Model.User.where('username', msg.workerId).fetch().then(function (resData) {
+		console.log("mturk user with username .." + msg.username)
+		Model.User.where('username', msg.username).fetch().then(function (resData) {
 			if (resData != null) {
-				console.log("found workerId:" + msg.workerId + " returning user progress" + resData.attributes.progress)
-				if (msg.workerId === "GUEST") {
+				console.log("found username:" + msg.username + " returning user progress" + resData.attributes.progress)
+				if (msg.username === "GUEST") {
 					var content = sliceContent(JsonSentencesPreview.Preview, 0, sentences_per_page)
 				} else {
 					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
@@ -148,7 +154,7 @@ io.on('connection', function (socket) {
 
 			} else {
 				//insert new user in database
-				new Model.User({username: msg.workerId, displayname: msg.workerId, progress: 0, points_earned: 0}).save().then(function (data) {
+				new Model.User({username: msg.username, displayname: msg.username, progress: 0, points_earned: 0}).save().then(function (data) {
 					console.log("created new mturk user..." + data.attributes.id)
 					var content = sliceContent(JsonSentences.Story1, 0, sentences_per_page)
 					io.to(clientId).emit('userProgress', {data: content, progress: data.attributes.progress, points_earned: data.attributes.points_earned})

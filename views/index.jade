@@ -22,7 +22,7 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup($('#page'), "#{user.username}", socket,false)
+                setup($('#page'), "#{user.username}", socket, parseInt("#{ui_version}"), false)
             });
             function post_it(parameters) {
                 console.log("called post...", parameters)

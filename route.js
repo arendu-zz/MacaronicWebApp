@@ -6,6 +6,7 @@ var bcrypt = require('bcrypt-nodejs');
 // custom library
 // model
 var Model = require('./model');
+var ui_version = require('./app').ui_version
 
 function alphanumeric_unique() {
 	return Math.random().toString(36).split('').filter(function (value, index, self) {
@@ -24,7 +25,7 @@ var index = function (req, res, next) {
 			user = user.toJSON();
 		}
 		user.displayname = unescapeHTML(user.username)
-		res.render('index', {title: 'Home', user: user});
+		res.render('index', {title: 'Home', user: user, ui_version: ui_version});
 	}
 };
 
