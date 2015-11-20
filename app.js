@@ -108,10 +108,17 @@ io.on('connection', function (socket) {
 	console.log("connected to client..." + clientId)
 	socket.on('logEvent', function (msg) {
 		new Model.Records(msg).save().then(function (data) {
-			console.log("record status:" + data.attributes.id)
+			console.log("new record added:" + data.attributes.id)
 		});
 		//io.to(clientId).emit('chat message', msg);
 	});
+
+	socket.on('logTranslation', function (msg) {
+		msg.translation = unescapeHTML(msg.translation)
+		new Model.Translations({username: msg.username, ui_version: parseInt(msg.ui_version), sentence_id: parseInt(msg.sentence_id), state: msg.state, input: msg.input, translation: unescapeHTML(msg.translation)}).save().then(function (data) {
+			console.log("new translation added:" + data.attributes.id)
+		})
+	})
 
 	socket.on('completedTask', function (msg) {
 
@@ -119,14 +126,6 @@ io.on('connection', function (socket) {
 			guestThankyou(clientId, io)
 		} else {
 			console.log('got completion from user!')
-			var listTLM = msg.hitlog
-			_.each(listTLM, function (tlm) {
-				tlm.translation = unescapeHTML(tlm.translation)
-				console.log("trying to log tlm!!!!!!!!!!!!!");
-				new Model.Translations({username: tlm.username, ui_version: parseInt(tlm.ui_version), state: tlm.state, input: tlm.input, translation: unescapeHTML(tlm.translation)}).save().then(function (data) {
-					console.log("new translation added:" + data.attributes.id)
-				})
-			})
 
 			new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
 				Model.User.where('username', msg.username).fetch().then(function (resData) {

@@ -33,6 +33,7 @@ CREATE TABLE mturkTranslationsInd(
   id integer primary key auto_increment,
   username varchar(255) not null,
   ui_version int not null,
+  sentence_id int not null, 
   state text,
   input text not null,
   translation text not null,
