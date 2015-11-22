@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 __author__ = 'arenduchintala'
 import codecs
 from optparse import OptionParser

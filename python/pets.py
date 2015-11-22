@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 __author__ = 'arenduchintala'
 from itertools import groupby, product
 import sys
