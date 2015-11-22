@@ -10,7 +10,15 @@ sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 
 if __name__ == '__main__':
-    fp =  sys.argv[1]
+    opt = OptionParser()
+    opt.add_option('-r', dest='rich', default="")
+    (options, _) = opt.parse_args()
+    if (options.rich == ""):
+        print 'Usage: python rich2wa.py -r FILE'
+        exit(-1)
+    else:
+        pass
+    fp = options.rich 
     inp = []
     for line in open(fp, 'r').readlines():
         items = line.split('|')
