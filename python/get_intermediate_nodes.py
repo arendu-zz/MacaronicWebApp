@@ -36,42 +36,41 @@ class TopList(object):
   
 if __name__ == '__main__':
     opt = OptionParser()
-    #opt.add_option('--lex1', dest="lex_e2f", default='lex1.e2f.small.pruned')
-    opt.add_option('--lex2', dest="lex_f2e", default='lex1.f2e.small.pruned')
-    opt.add_option('-e', dest='intermediate', default='basic.edges.txt')
+    opt.add_option('-p', dest="phrase_table", default='')
+    opt.add_option('-e', dest='intermediate', default='')
     (options, _) = opt.parse_args()
-    '''lex_e2f = {}
-    for l in codecs.open(options.lex_e2f, 'r', 'utf-8').readlines():
-        items = l.strip().split()
-        prob = float(items[2].strip())
-        tok2 = items[1].strip()
-        tok1 = items[0].strip()
-        tl = lex_e2f.get(tok2, TopList())
-        tl.add(prob, tok1)
-        lex_e2f[tok2] = tl
-        if len(tl.get_list()) == 5:
-            pdb.set_trace()
-    '''
+    if options.phrase_table == '' or options.intermediate == '':
+        sys.stderr.write('Usage: python get_intermediate_nodes.py -p PHRASE_TABLE_FILE -e EDGES_FILE\n')
+        exit(-1)
+    else:
+        pass
+
     lex_f2e = {}
-    for l in codecs.open(options.lex_f2e, 'r', 'utf-8').readlines():
-        items = l.strip().split()
+    for l in codecs.open(options.phrase_table, 'r', 'utf-8').readlines():
+
+        items = l.strip().split('|||')
         prob = float(items[2].strip())
-        tok2 = items[1].strip()
-        tok1 = items[0].strip()
-        tl = lex_f2e.get(tok2, TopList())
-        tl.add(prob, tok1)
-        lex_f2e[tok2] = tl  # (en| fr)
+        fr = items[0].strip()
+        en = items[1].strip()
+        tl = lex_f2e.get(fr, TopList())
+        tl.add(prob, en)
+        lex_f2e[fr] = tl  # (en| fr)
 
     for b in codecs.open(options.intermediate, 'r', 'utf-8').readlines():
-        [en,fr] = b.strip().split()
+        try:
+            [en,fr] = b.strip().split()
+        except ValueError:
+            sys.stderr.write("FAILED TO SPLIT:" + b + "\n")
+            exit(-1)
         tl = lex_f2e.get(fr.strip(),None)
         if tl is not None:
-            m = [(pe,e_tok) for pe, e_tok in tl.get_list() if e_tok == en]
-            if len(m) == 0: #en is not in the top 5
+            en_list = [n[1].strip() for n in tl.get_list()]
+            en = en.strip()
+            if en in en_list:
+                pass
+            else:
                 (best_en_prob, best_en_tok) = max(tl.get_list())
                 print en, fr, best_en_tok
-            else:
-                pass
 
 
 

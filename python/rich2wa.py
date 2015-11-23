@@ -14,7 +14,7 @@ if __name__ == '__main__':
     opt.add_option('-r', dest='rich', default="")
     (options, _) = opt.parse_args()
     if (options.rich == ""):
-        print 'Usage: python rich2wa.py -r FILE'
+        sys.stderr.write('Usage: python rich2wa.py -r FILE\n')
         exit(-1)
     else:
         pass
