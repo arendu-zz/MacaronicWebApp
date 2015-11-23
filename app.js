@@ -12,7 +12,7 @@ var bcrypt = require('bcrypt-nodejs');
 var passport = require('passport');
 var _ = require('underscore');
 var LocalStrategy = require('passport-local').Strategy;
-var yargs = require('yargs').usage('Usage: $0 --uiver [1,0] --port [3000 ... 4000]').demand(['uiver', 'port']).argv;
+var yargs = require('yargs').usage('Usage: $0 --uiver [1,0] --port [3000 ... 4000] --story [0..4]').demand(['uiver', 'port', 'story']).argv;
 exports.ui_version = yargs.uiver
 
 // routes
@@ -100,6 +100,20 @@ app.use(route.notFound404);
 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var story_num = parseInt(yargs.story)
+var JsonSentences = null
+if (story_num == 0) {
+    JsonSentences = require('./stories/jsonsentences')
+}else if (story_num == 1) {
+    JsonSentences = require('./stories/le_petit_prince.fr')
+}else if (story_num == 2) {
+    JsonSentences = require('./stories/jde.fr')
+}else if (story_num == 3) {
+    JsonSentences = require('./stories/nachrichtenleicht.de')
+}else {
+    JsonSentences = require('./stories/jsonsentences')
+}
+
 var JsonSentences = require('./stories/jsonsentences')
 var JsonSentencesPreview = require('./stories/jsonsentences-preview')
 
@@ -195,9 +209,10 @@ function nextHit(resData, content, clientId, io) {
 
 }
 function sliceContent(fullcontent, progress, sentences_per_page) {
-	var st = progress * sentences_per_page
-	var end = st + sentences_per_page
-	var content = fullcontent.slice(st, end)
+	//var st = progress * sentences_per_page
+	//var end = st + sentences_per_page
+	//var content = fullcontent.slice(st, end)
+  var content = fullcontent[parseInt(progress)]
 	return content
 }
 

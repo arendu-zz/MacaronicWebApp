@@ -15,7 +15,7 @@ sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 '''
-VIS_LANG = 'en'
+VIS_LANG = 'de'
 INPUT_LANG = 'de'
 USE_SPLIT = False
 
@@ -392,7 +392,7 @@ def find_nearest_node_with_property(n, direction, graph):
 
 def propagate(graph):
     graph.set_visibility(VIS_LANG)
-    graph.cognate_visibility(VIS_LANG)
+    #graph.cognate_visibility(VIS_LANG)
     for n in graph.nodes:
         if n.de_id is None:
             de_n = n
@@ -679,6 +679,7 @@ if __name__ == '__main__':
         all_coe_sentences.append(coe_sentences)
     sys.stderr.write('done' + str(eps_word_alignment) + ' errors\n')
     print 'var json_str_arr = ', all_coe_sentences
+    print 'module.exports.Story1 = json_str_arr'
 
 
 
