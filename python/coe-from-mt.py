@@ -9,12 +9,12 @@ import json
 import sys
 import operator
 
-'''reload(sys)
+reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
-'''
+
 VIS_LANG = 'de'
 INPUT_LANG = 'de'
 USE_SPLIT = False
@@ -454,7 +454,7 @@ if __name__ == '__main__':
     opt = OptionParser()
 
     opt.add_option('-i', dest='input_mt', default='')
-    opt.add_option('-s', dest='split_string', default='Article')
+    opt.add_option('-s', dest='split_string', default='')
     opt.add_option('-o', dest='output_mt', default='')
     opt.add_option('-e', dest='intermediate', default='')
     # opt.add_option('-p', dest='input_parse', default='../web/newstest2013/newstest2013.input.tok.1.parsed')
@@ -486,195 +486,199 @@ if __name__ == '__main__':
     all_coe_sentences = []
     coe_sentences = []
     for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[:200]:
-        if USE_SPLIT and input_line.lower().strip() == options.split_string.lower().strip():
-            if len(coe_sentences) > 0:
-                all_coe_sentences.append(coe_sentences)
-            coe_sentences = []
-        elif not USE_SPLIT and len(coe_sentences) == 5:
-            all_coe_sentences.append(coe_sentences)
-            coe_sentences = []
+        sys.stderr.write('len all coe ' + str(len(all_coe_sentences)) + ' len coe ' + str(len(coe_sentences)) + ' using split: ' + str(USE_SPLIT) + 'split string:' + options.split_string +  '\n')
+        if USE_SPLIT:
+            if input_line.lower().strip() == options.split_string.lower().strip():
+                if len(coe_sentences) > 0:
+                    all_coe_sentences.append(coe_sentences)
+                coe_sentences = []
+                continue
         else:
-            sys.stderr.write('SENT' + str(sent_idx) + '\n')
-            input_sent = input_line.strip().split()
-            output_items = output_line.strip().split('|')
-            output_phrases = [oi.strip() for idx, oi in enumerate(output_items) if idx % 2 == 0 and oi.strip() != '']
-            output_sent = ' '.join(output_phrases).split()
-            output_spans = get_output_phrase_as_spans(output_phrases)
-            output_meta = [tuple(om.split(',wa=')) for idx, om in enumerate(output_items) if idx % 2 != 0]
-            input_spans = [tuple([int(i) for i in om[0].split('-')]) for om in output_meta]
-            wa_per_span = [[tuple([int(i) for i in a.split('-')]) for a in om[1].split()] for om in output_meta]
-            input_tok_group = [-1] * len(input_sent)
-            output_tok_group = [-1] * len(output_sent)
+            if len(coe_sentences) == 10:
+                all_coe_sentences.append(coe_sentences)
+                coe_sentences = []
 
-            sys.stderr.write('input sent:' + ' '.join(input_sent) + '\n')
-            sys.stderr.write('output sent:' + ' '.join(output_sent) + '\n')
+        sys.stderr.write('SENT' + str(sent_idx) + '\n')
+        input_sent = input_line.strip().split()
+        output_items = output_line.strip().split('|')
+        output_phrases = [oi.strip() for idx, oi in enumerate(output_items) if idx % 2 == 0 and oi.strip() != '']
+        output_sent = ' '.join(output_phrases).split()
+        output_spans = get_output_phrase_as_spans(output_phrases)
+        output_meta = [tuple(om.split(',wa=')) for idx, om in enumerate(output_items) if idx % 2 != 0]
+        input_spans = [tuple([int(i) for i in om[0].split('-')]) for om in output_meta]
+        wa_per_span = [[tuple([int(i) for i in a.split('-')]) for a in om[1].split()] for om in output_meta]
+        input_tok_group = [-1] * len(input_sent)
+        output_tok_group = [-1] * len(output_sent)
 
-            coe_sentence = Sentence(sent_idx, ' '.join(input_sent), ' '.join(output_sent), None)
-            coe_sentence.initial_order_by = VIS_LANG
-            sent_idx += 1
-            assert len(wa_per_span) == len(input_spans) == len(output_spans)
-            phrase_dict = {}
-            input_coverage = [0] * len(input_sent)
-            group_idx = 0
-            for idx, (out_span, inp_span, wa) in enumerate(zip(output_spans, input_spans, wa_per_span)):
-                out_phrase = output_sent[out_span[0]:out_span[1] + 1]
-                inp_phrase = input_sent[inp_span[0]:inp_span[1] + 1]
-                # print '\t phrases:', input_sent[inp_span[0]:inp_span[1] + 1], '-', output_sent[out_span[0]:out_span[1] + 1]
-                # print '\t phrase spans:', inp_span, '-', out_span
-                # print '\twa:', wa
-                wa_no_null = insert_epsilon_edge(wa, input_sent[inp_span[0]:inp_span[1] + 1],
-                                                 output_sent[out_span[0]:out_span[1] + 1])
-                sym_coverage, sym_wa = make_symmetric(wa_no_null)
-                assert sym_coverage == 0
-                untangle = untangle_wa(sym_wa)
-                final_groups = {}
-                for iu in sorted(untangle):
-                    ou = untangle[iu]
-                    if len(iu) > 1:
-                        assert len(ou) == 1  # or (len(iu) == 2 and len(ou) == 2)
-                        pass
-                    if len(ou) > 1:
-                        assert len(iu) == 1  # or (len(iu) == 2 and len(ou) == 2)
-                        pass
-                    final_groups[group_idx] = (iu, ou, inp_span, out_span)
-                    coe_graph = Graph(group_idx)
-                    to_nodes = []
-                    node_idx = 0
-                    for iu_idx in iu:
-                        assert inp_phrase[iu_idx] == input_sent[inp_span[0] + iu_idx]
-                        input_coverage[inp_span[0] + iu_idx] = 1
-                        input_tok_group[inp_span[0] + iu_idx] = group_idx
-                        n = Node(node_idx, input_sent[inp_span[0] + iu_idx], None, inp_span[0] + iu_idx, DE_LANG,
-                                 VIS_LANG == DE_LANG, True, False, False)
-                        node_idx += 1
-                        to_nodes.append(n)
+        sys.stderr.write('input sent:' + ' '.join(input_sent) + '\n')
+        sys.stderr.write('output sent:' + ' '.join(output_sent) + '\n')
 
-                    from_nodes = []
-                    for ou_idx in ou:
-                        assert out_phrase[ou_idx] == output_sent[out_span[0] + ou_idx]
-                        output_tok_group[out_span[0] + ou_idx] = group_idx
-                        n = Node(node_idx, output_sent[out_span[0] + ou_idx], out_span[0] + ou_idx, None, EN_LANG,
-                                 VIS_LANG == EN_LANG, False, True, False)
-                        node_idx += 1
-                        from_nodes.append(n)
+        coe_sentence = Sentence(sent_idx, ' '.join(input_sent), ' '.join(output_sent), None)
+        coe_sentence.initial_order_by = VIS_LANG
+        sent_idx += 1
+        assert len(wa_per_span) == len(input_spans) == len(output_spans)
+        phrase_dict = {}
+        input_coverage = [0] * len(input_sent)
+        group_idx = 0
+        for idx, (out_span, inp_span, wa) in enumerate(zip(output_spans, input_spans, wa_per_span)):
+            out_phrase = output_sent[out_span[0]:out_span[1] + 1]
+            inp_phrase = input_sent[inp_span[0]:inp_span[1] + 1]
+            # print '\t phrases:', input_sent[inp_span[0]:inp_span[1] + 1], '-', output_sent[out_span[0]:out_span[1] + 1]
+            # print '\t phrase spans:', inp_span, '-', out_span
+            # print '\twa:', wa
+            wa_no_null = insert_epsilon_edge(wa, input_sent[inp_span[0]:inp_span[1] + 1],
+                                             output_sent[out_span[0]:out_span[1] + 1])
+            sym_coverage, sym_wa = make_symmetric(wa_no_null)
+            assert sym_coverage == 0
+            untangle = untangle_wa(sym_wa)
+            final_groups = {}
+            for iu in sorted(untangle):
+                ou = untangle[iu]
+                if len(iu) > 1:
+                    assert len(ou) == 1  # or (len(iu) == 2 and len(ou) == 2)
+                    pass
+                if len(ou) > 1:
+                    assert len(iu) == 1  # or (len(iu) == 2 and len(ou) == 2)
+                    pass
+                final_groups[group_idx] = (iu, ou, inp_span, out_span)
+                coe_graph = Graph(group_idx)
+                to_nodes = []
+                node_idx = 0
+                for iu_idx in iu:
+                    assert inp_phrase[iu_idx] == input_sent[inp_span[0] + iu_idx]
+                    input_coverage[inp_span[0] + iu_idx] = 1
+                    input_tok_group[inp_span[0] + iu_idx] = group_idx
+                    n = Node(node_idx, input_sent[inp_span[0] + iu_idx], None, inp_span[0] + iu_idx, DE_LANG,
+                             VIS_LANG == DE_LANG, True, False, False)
+                    node_idx += 1
+                    to_nodes.append(n)
 
-                    if len(from_nodes) > 1:
-                        assert len(to_nodes) == 1  # or (len(iu) == 2 and len(ou) == 2)
-                        pass
-                    if len(to_nodes) > 1:
-                        assert len(from_nodes) == 1  # or (len(iu) == 2 and len(ou) == 2)
-                        pass
-                    coe_graph.nodes = from_nodes + to_nodes
-                    coe_graph.edges = make_edges(from_nodes, to_nodes)
-                    coe_graph.edges = make_edges_with_intermediate_nodes(from_nodes, to_nodes,
-                                                                         intermediate=intermediate_nodes, graph=coe_graph)
-                    coe_sentence.graphs.append(coe_graph)
-                    group_idx += 1
+                from_nodes = []
+                for ou_idx in ou:
+                    assert out_phrase[ou_idx] == output_sent[out_span[0] + ou_idx]
+                    output_tok_group[out_span[0] + ou_idx] = group_idx
+                    n = Node(node_idx, output_sent[out_span[0] + ou_idx], out_span[0] + ou_idx, None, EN_LANG,
+                             VIS_LANG == EN_LANG, False, True, False)
+                    node_idx += 1
+                    from_nodes.append(n)
 
-            if 0 in input_coverage:
-                eps_word_alignment += 1
-                assert 0 not in input_coverage
+                if len(from_nodes) > 1:
+                    assert len(to_nodes) == 1  # or (len(iu) == 2 and len(ou) == 2)
+                    pass
+                if len(to_nodes) > 1:
+                    assert len(from_nodes) == 1  # or (len(iu) == 2 and len(ou) == 2)
+                    pass
+                coe_graph.nodes = from_nodes + to_nodes
+                coe_graph.edges = make_edges(from_nodes, to_nodes)
+                coe_graph.edges = make_edges_with_intermediate_nodes(from_nodes, to_nodes,
+                                                                     intermediate=intermediate_nodes, graph=coe_graph)
+                coe_sentence.graphs.append(coe_graph)
+                group_idx += 1
 
-            coe_sentence.graphs = sort_groups_by_lang(coe_sentence.graphs, VIS_LANG)
-            sys.stderr.write(' '.join([str(i) for i in input_tok_group]) + '\n')
-            sys.stderr.write(' '.join([str(i) for i in output_tok_group]) + '\n')
+        if 0 in input_coverage:
+            eps_word_alignment += 1
+            assert 0 not in input_coverage
 
-            split_inp, split_out, split_orderings = mark_swaps_transfers_interrupts(
-                input_tok_group,
-                output_tok_group)
-            split_sets = get_split_sets(split_inp, split_out)
-            swap_rules = get_swap_rules(coe_sentence, input_tok_group, output_tok_group, input_parse, split_sets, VIS_LANG)
-            for sr in swap_rules:
-                sys.stderr.write('swaps-pets:' + str(sr) + '\n')
+        coe_sentence.graphs = sort_groups_by_lang(coe_sentence.graphs, VIS_LANG)
+        sys.stderr.write(' '.join([str(i) for i in input_tok_group]) + '\n')
+        sys.stderr.write(' '.join([str(i) for i in output_tok_group]) + '\n')
 
-            split_inp_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_inp.items()])
-            sys.stderr.write('split inp:' + split_inp_str + '\n')
-            split_out_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_out.items()])
-            sys.stderr.write('split out:' + split_out_str + '\n')
-            if len(split_inp) or len(split_out):
-                pass  # pdb.set_trace()
-            swap_objs = []
-            for sr in swap_rules:
-                s_obj = Swap()
-                s_obj.graphs = sr[1]
-                s_obj.other_graphs = sr[2]
-                s_obj.head = sr[4]
-                swap_objs.append(s_obj)
+        split_inp, split_out, split_orderings = mark_swaps_transfers_interrupts(
+            input_tok_group,
+            output_tok_group)
+        split_sets = get_split_sets(split_inp, split_out)
+        swap_rules = get_swap_rules(coe_sentence, input_tok_group, output_tok_group, input_parse, split_sets, VIS_LANG)
+        for sr in swap_rules:
+            sys.stderr.write('swaps-pets:' + str(sr) + '\n')
 
-            for g in coe_sentence.graphs:
-                g.er = True
-                for so in swap_objs:
-                    if g.id in so.graphs or g.id in so.other_graphs:
-                        # print 'there!', g.id
-                        if VIS_LANG == 'de':
-                            g.swaps = True
-                            g.swap_toward_en.append(so.make_copy())
-                        else:
-                            g.swaps = True
-                            g.swap_toward_de.append(so.make_copy())
+        split_inp_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_inp.items()])
+        sys.stderr.write('split inp:' + split_inp_str + '\n')
+        split_out_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_out.items()])
+        sys.stderr.write('split out:' + split_out_str + '\n')
+        if len(split_inp) or len(split_out):
+            pass  # pdb.set_trace()
+        swap_objs = []
+        for sr in swap_rules:
+            s_obj = Swap()
+            s_obj.graphs = sr[1]
+            s_obj.other_graphs = sr[2]
+            s_obj.head = sr[4]
+            swap_objs.append(s_obj)
+
+        for g in coe_sentence.graphs:
+            g.er = True
+            for so in swap_objs:
+                if g.id in so.graphs or g.id in so.other_graphs:
+                    # print 'there!', g.id
+                    if VIS_LANG == 'de':
+                        g.swaps = True
+                        g.swap_toward_en.append(so.make_copy())
                     else:
-                        # print 'not there', g.id
+                        g.swaps = True
+                        g.swap_toward_de.append(so.make_copy())
+                else:
+                    # print 'not there', g.id
+                    pass
+            if g.id in split_out.keys():
+                # output language is split
+                g.splits = True
+                g.separators = list(set(split_out[g.id][0]))
+                g.separator_positions = split_out[g.id][1]
+                if INPUT_LANG == 'en':
+                    g.split_order_by_de = split_orderings[g.id]['split_ordering']
+                    g.split_order_by_en = split_orderings[g.id]['unsplit_ordering']
+                else:
+                    g.split_order_by_de = split_orderings[g.id]['unsplit_ordering']
+                    g.split_order_by_en = split_orderings[g.id]['split_ordering']
+                # g.split_ordering = split_orderings[g.id]['split_ordering']
+                # g.unsplit_ordering = split_orderings[g.id]['unsplit_ordering']
+                g.split_to = 'de' if VIS_LANG == 'de' else 'en'
+                # if VIS_LANG == 'de':  # de is the input language and de is the visible language
+                # g.currently_split = False
+                # else:
+                # g.currently_split = True
+
+            if g.id in split_inp.keys():
+                # input language is split
+                g.splits = True
+                g.separators = list(set(split_inp[g.id][0]))
+                g.separator_positions = split_inp[g.id][1]
+                if INPUT_LANG == 'en':
+                    g.split_order_by_en = split_orderings[g.id]['split_ordering']
+                    g.split_order_by_de = split_orderings[g.id]['unsplit_ordering']
+                else:
+                    g.split_order_by_en = split_orderings[g.id]['unsplit_ordering']
+                    g.split_order_by_de = split_orderings[g.id]['split_ordering']
+                # g.split_ordering = split_orderings[g.id]['split_ordering']
+                # g.unsplit_ordering = split_orderings[g.id]['unsplit_ordering']
+                g.split_to = 'de' if VIS_LANG == 'en' else 'en'
+                # if VIS_LANG == 'de':  # de is the input language and de is the visible language
+                # g.currently_split = True
+                # else:
+                # g.currently_split = False
+
+            for n in g.nodes:
+                if n.lang == EN_LANG:
+                    if n.s == output_sent[n.en_id]:
+                        # n.en_left = [START] + output_tok_group[:n.en_id]
+                        # n.en_left.reverse()
+                        # n.en_right = output_tok_group[n.en_id + 1:] + [END]
                         pass
-                if g.id in split_out.keys():
-                    # output language is split
-                    g.splits = True
-                    g.separators = list(set(split_out[g.id][0]))
-                    g.separator_positions = split_out[g.id][1]
-                    if INPUT_LANG == 'en':
-                        g.split_order_by_de = split_orderings[g.id]['split_ordering']
-                        g.split_order_by_en = split_orderings[g.id]['unsplit_ordering']
-                    else:
-                        g.split_order_by_de = split_orderings[g.id]['unsplit_ordering']
-                        g.split_order_by_en = split_orderings[g.id]['split_ordering']
-                    # g.split_ordering = split_orderings[g.id]['split_ordering']
-                    # g.unsplit_ordering = split_orderings[g.id]['unsplit_ordering']
-                    g.split_to = 'de' if VIS_LANG == 'de' else 'en'
-                    # if VIS_LANG == 'de':  # de is the input language and de is the visible language
-                    # g.currently_split = False
-                    # else:
-                    # g.currently_split = True
+                if n.lang == DE_LANG:
+                    if n.s == input_sent[n.de_id]:
+                        # n.de_left = [START] + input_tok_group[:n.de_id]
+                        # n.de_left.reverse()
+                        # n.de_right = input_tok_group[n.de_id + 1:] + [END]
+                        pass
+            propagate(g)
 
-                if g.id in split_inp.keys():
-                    # input language is split
-                    g.splits = True
-                    g.separators = list(set(split_inp[g.id][0]))
-                    g.separator_positions = split_inp[g.id][1]
-                    if INPUT_LANG == 'en':
-                        g.split_order_by_en = split_orderings[g.id]['split_ordering']
-                        g.split_order_by_de = split_orderings[g.id]['unsplit_ordering']
-                    else:
-                        g.split_order_by_en = split_orderings[g.id]['unsplit_ordering']
-                        g.split_order_by_de = split_orderings[g.id]['split_ordering']
-                    # g.split_ordering = split_orderings[g.id]['split_ordering']
-                    # g.unsplit_ordering = split_orderings[g.id]['unsplit_ordering']
-                    g.split_to = 'de' if VIS_LANG == 'en' else 'en'
-                    # if VIS_LANG == 'de':  # de is the input language and de is the visible language
-                    # g.currently_split = True
-                    # else:
-                    # g.currently_split = False
+            for n in g.nodes:
+                assert n.en_id is not None and n.de_id is not None
+        propagate_split_info(coe_sentence)
+        # sys.stderr.write('done sent' + str(sent_idx) + '\n')
 
-                for n in g.nodes:
-                    if n.lang == EN_LANG:
-                        if n.s == output_sent[n.en_id]:
-                            # n.en_left = [START] + output_tok_group[:n.en_id]
-                            # n.en_left.reverse()
-                            # n.en_right = output_tok_group[n.en_id + 1:] + [END]
-                            pass
-                    if n.lang == DE_LANG:
-                        if n.s == input_sent[n.de_id]:
-                            # n.de_left = [START] + input_tok_group[:n.de_id]
-                            # n.de_left.reverse()
-                            # n.de_right = input_tok_group[n.de_id + 1:] + [END]
-                            pass
-                propagate(g)
-
-                for n in g.nodes:
-                    assert n.en_id is not None and n.de_id is not None
-            propagate_split_info(coe_sentence)
-            # sys.stderr.write('done sent' + str(sent_idx) + '\n')
-
-            json_sentence_str = json.dumps(coe_sentence, indent=4, sort_keys=True)
-            coe_sentences.append(' '.join(json_sentence_str.split()))
+        json_sentence_str = json.dumps(coe_sentence, indent=4, sort_keys=True)
+        coe_sentences.append(' '.join(json_sentence_str.split()))
     if len(coe_sentences) > 0:
         all_coe_sentences.append(coe_sentences)
     sys.stderr.write('done' + str(eps_word_alignment) + ' errors\n')
