@@ -114,7 +114,6 @@ if (story_num == 0) {
     JsonSentences = require('./stories/jsonsentences')
 }
 
-var JsonSentences = require('./stories/jsonsentences')
 var JsonSentencesPreview = require('./stories/jsonsentences-preview')
 
 io.on('connection', function (socket) {
@@ -212,7 +211,9 @@ function sliceContent(fullcontent, progress, sentences_per_page) {
 	//var st = progress * sentences_per_page
 	//var end = st + sentences_per_page
 	//var content = fullcontent.slice(st, end)
+  console.log('len full: ' + fullcontent.length)
   var content = fullcontent[parseInt(progress)]
+  console.log('len content: ' + content.length)
 	return content
 }
 
