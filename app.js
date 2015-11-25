@@ -13,7 +13,7 @@ var _ = require('underscore');
 var route = require('./route')
 var Model = require('./model');
 var yargs = require('yargs').usage('Usage: $0 --uiver [0,1] --host [ec2,localhost] --story [0...4]').demand(['uiver', 'host', 'story']).argv;
-
+exports.ui_version = parseInt(yargs.uiver)
 // setup app
 var app = express();
 app.set('views', __dirname + '/views');
@@ -37,7 +37,7 @@ if (yargs.host == 'ec2') {
 	app.set('port', process.env.PORT || 3030);
 	https = require('http').createServer(app);
 }
-exports.ui_version = yargs.uiver
+
 var io = require('socket.io')(https);
 var story_num = parseInt(yargs.story)
 var JsonSentences = null

@@ -4,18 +4,19 @@ var _ = require('underscore');
 // custom library
 // model
 var Model = require('./model');
-var ui_version = require('./app').ui_version
+var App = require('./app')
+
 // index
 var index = function (req, res, next) {
 	if (req.query.hasOwnProperty('assignmentId')) {
 		if (req.query.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
-			res.render('preview', {title: "mturk page", ui_version: ui_version, user: { assignmentId: req.query.assignmentId, learnerType: 'previewer', username: req.query.workerId}})
+			res.render('preview', {title: "mturk page", ui_version: App.ui_version, user: { assignmentId: req.query.assignmentId, learnerType: 'previewer', username: req.query.workerId}})
 		} else {
-
-			res.render('index', {title: "mturk page", ui_version: ui_version, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
+			console.log('uiver:' + App.ui_version)
+			res.render('index', {title: "mturk page", ui_version: App.ui_version, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
 		}
 	} else {
-		res.render('index', {title: "mturk page", ui_version: ui_version, user: { assignmentId: null, learnerType: 'visitor', workerId: '0'}})
+		res.render('index', {title: "mturk page", ui_version: App.ui_version, user: { assignmentId: null, learnerType: 'visitor', workerId: '0'}})
 	}
 
 };
