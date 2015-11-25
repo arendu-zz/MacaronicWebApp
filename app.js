@@ -41,19 +41,24 @@ if (yargs.host == 'ec2') {
 var io = require('socket.io')(https);
 var story_num = parseInt(yargs.story)
 var JsonSentences = null
+var JsonSentencesPreview = null
 if (story_num == 0) {
+  JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jsonsentences')
 } else if (story_num == 1) {
+  JsonSentencesPreview = require('./stories/le_petit_prince.fr.preview')
 	JsonSentences = require('./stories/le_petit_prince.fr')
 } else if (story_num == 2) {
+  JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jde.fr')
 } else if (story_num == 3) {
+  JsonSentencesPreview = require('./stories/nachrichtenleicht.de.preview')
 	JsonSentences = require('./stories/nachrichtenleicht.de')
 } else {
+JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jsonsentences')
 }
 
-var JsonSentencesPreview = require('./stories/jsonsentences-preview')
 var sentences_per_page = 5
 
 io.on('connection', function (socket) {
@@ -95,8 +100,8 @@ io.on('connection', function (socket) {
 		})
 		new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
 			Model.User.where('username', msg.username).fetch().then(function (resData) {
-				console.log('sending new content...')
-				sliceContent(JsonSentences.Story1, resData, clientId, io)
+				//console.log('sending new content...')
+				//sliceContent(JsonSentences.Story1, resData, clientId, io)
 				//nextHit(resData, content, clientId, io)
 			})
 		})
@@ -110,11 +115,11 @@ io.on('connection', function (socket) {
 				if (resData != null) {
 					console.log("no assignment but found user, with progress ", resData.attributes.progress);
 					console.log(JsonSentences.Story1.length)
-					var content = sliceContent(JsonSentencesPreview.Preview, resData, clientId, io)
+					sliceContent(JsonSentencesPreview.Preview, resData, clientId, io)
 					//io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {
 					console.log("no assignment no user")
-					var content = sliceContent(JsonSentences.Story1, resData, clientId, io)
+					sliceContent(JsonSentences.Story1, resData, clientId, io)
 					//io.to(clientId).emit('userProgress', { data: content, progress: 0, points_earned: 0})
 				}
 			})
@@ -227,7 +232,7 @@ function sliceContent(fullcontent, userData, clientId, io) {
 				}
 			})
 			//console.log('returning...', return_id)
-			nextHit(userData, [content_objs[return_id]], clientId, io)
+			//nextHit(userData, [content_objs[return_id]], clientId, io)
 
 		})
 
