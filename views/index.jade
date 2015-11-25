@@ -27,7 +27,20 @@ html
             });
             function post_it(parameters) {
                 console.log("called post...", parameters)
+                var form = $('<form></form>');
+                form.attr("method", "post");
+                form.attr("action", "https://workersandbox.mturk.com/mturk/externalSubmit");
+                $.each(parameters, function(key, value) {
+                    var field = $('<input></input>');
+                    field.attr("type", "hidden");
+                    field.attr("name", key);
+                    field.attr("value", value);
+                    form.append(field);
+                    console.log("name", key , "val", value);
+                });
+                $(document.body).append(form);
                 completedTask()
+                form.submit();
             }
 
     body.bodygrad
