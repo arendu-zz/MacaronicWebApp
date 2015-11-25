@@ -95,8 +95,8 @@ io.on('connection', function (socket) {
 		})
 		new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
 			Model.User.where('username', msg.username).fetch().then(function (resData) {
-				console.log('sending new content...')
-				sliceContent(JsonSentences.Story1, resData, clientId, io)
+				//console.log('sending new content...')
+				//sliceContent(JsonSentences.Story1, resData, clientId, io)
 				//nextHit(resData, content, clientId, io)
 			})
 		})
