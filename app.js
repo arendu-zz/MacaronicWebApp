@@ -177,14 +177,12 @@ function nextHit(resData, content, clientId, io) {
 
 function sliceContent(fullcontent, userData, clientId, io) {
 	var username = userData.attributes.username
-	console.log("called...", fullcontent.length)
 	var sentences_completed = {}
 	var content_objs = {}
 
 	var return_id = null
 	console.log("LEN:", Object.keys(sentences_completed).length)
 	new Model.CompletedSentences().fetchAll().then(function (rd) {
-		console.log("query for all completed sentences")
 		if (rd != null) {
 			var max_seen = 0
 			_.each(rd.models, function (model) {
@@ -196,33 +194,26 @@ function sliceContent(fullcontent, userData, clientId, io) {
 			_.each(fullcontent, function (s) {
 				var s_obj = JSON.parse(s);
 				sentences_completed[s_obj.id] = max_seen + 1
-				console.log('initial', s_obj.id, sentences_completed[s_obj.id])
 				content_objs[s_obj.id] = s
 			})
 
 			_.each(rd.models, function (model) {
-				console.log('updaing', model.attributes.sentence_id)
 				sentences_completed[model.attributes.sentence_id] = 1 + (max_seen - model.attributes.times_completed)
 
 			})
 		}
-		console.log("LEN:", Object.keys(sentences_completed).length)
 		Model.UserCompletedSentences.where('username', username).fetchAll().then(function (rd) {
 			if (rd != null) {
 
 				_.each(rd.models, function (model) {
-					console.log('deleting', model.attributes.sentence_id)
 					delete sentences_completed[model.attributes.sentence_id]
 				})
-				console.log('done deleting...')
 			}
-			console.log("LEN:", Object.keys(sentences_completed).length)
-			console.log("WTF!!")
 			var cumilative_completed = {}
 			var sum = 0
 			_.each(sentences_completed, function (v, k) {
 				v = parseInt(v)
-				console.log('final', sentences_completed[k], k, v)
+				//console.log('final', sentences_completed[k], k, v)
 				cumilative_completed[k] = [parseInt(sum), parseInt(sum) + parseInt(v)]
 				sum = parseInt(sum) + parseInt(v)
 			})
@@ -230,12 +221,12 @@ function sliceContent(fullcontent, userData, clientId, io) {
 			var r = Math.random() * sum
 
 			_.each(cumilative_completed, function (v, k) {
-				console.log(v[0], v[1], r, k)
+				//console.log(v[0], v[1], r, k)
 				if (v[0] < r && v[1] > r) {
 					return_id = k
 				}
 			})
-			console.log('returning...', return_id)
+			//console.log('returning...', return_id)
 			nextHit(userData, [content_objs[return_id]], clientId, io)
 
 		})
