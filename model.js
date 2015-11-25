@@ -1,22 +1,34 @@
 var DB = require('./db').DB;
 
 var User = DB.Model.extend({
-   tableName: 'mturkUsersInd',
+   tableName: 'mturkUsers',
    idAttribute: 'id',
 });
 
 var Records= DB.Model.extend({
-	tableName: 'mturkRecordsInd',
+	tableName: 'mturkRecords',
 	idAttribute: 'id',
 });
 
 var Translations = DB.Model.extend({
-	tableName: 'mturkTranslationsInd',
+	tableName: 'mturkTranslations',
+	idAttribute: 'id',
+})
+
+var CompletedSentences = DB.Model.extend({
+	tableName:'mturkCompletedSentences',
+	idAttribute: 'id',
+})
+
+var UserCompletedSentences = DB.Model.extend({
+	tableName: 'mturkUserCompletedSentences',
 	idAttribute: 'id',
 })
 
 module.exports = {
-   User: User,
-   Records: Records,
-   Translations: Translations
+    User: User,
+    Records: Records,
+    Translations: Translations,
+    CompletedSentences: CompletedSentences,
+	UserCompletedSentences: UserCompletedSentences
 };

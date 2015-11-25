@@ -18,11 +18,12 @@ html
         script(type='text/javascript', src='/MacaronicParseUI/js/coe-utils.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/d3.min.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/jquery.d3.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/regex_tokenizer.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/bleu.js')
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup($('#page'), "#{user.workerId}", "#{user.assignmentId}", socket, true)
+                setup("GUEST", socket, parseInt("#{ui_version}"), true)
                 if ("#{user.assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
                     console.log('assignmet disabled' + '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', true)

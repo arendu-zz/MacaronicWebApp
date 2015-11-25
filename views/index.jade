@@ -23,7 +23,7 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup($('#page'), "#{user.username}", socket, parseInt("#{ui_version}"), false)
+                setup("#{user.username}", socket, parseInt("#{ui_version}"), false)
             });
             function post_it(parameters) {
                 console.log("called post...", parameters)
@@ -39,7 +39,5 @@ html
                     br
                     | Points:
                     span#pointsEarned.bold
-                    br
-                    a(href='/logout') logout
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
             button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})") Submit

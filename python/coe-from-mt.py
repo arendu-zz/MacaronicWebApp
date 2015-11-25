@@ -8,6 +8,7 @@ from pets import get_swap_rules, get_split_sets
 import json
 import sys
 import operator
+import itertools
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -18,6 +19,12 @@ sys.stdout.encoding = 'utf-8'
 VIS_LANG = 'de'
 INPUT_LANG = 'de'
 USE_SPLIT = False
+
+
+def logit(str, priority=0):
+    if priority > 5:
+        sys.stderr.write(str)
+
 
 def get_contiguous(lst):
     ranges = []
@@ -323,7 +330,7 @@ def make_edges_with_intermediate_nodes(from_nodes, to_nodes, intermediate, graph
                 int_tok = f.s  # why force this?
             else:
                 pass
-            sys.stderr.write('int:' + int_tok + ' in:' + f.s + '-' + t.s + '\n')
+            logit('int:' + int_tok + ' in:' + f.s + '-' + t.s + '\n')
             int_node = f.makecopy()
             int_node.id = len(graph.nodes)
             int_node.s = int_tok
@@ -392,7 +399,7 @@ def find_nearest_node_with_property(n, direction, graph):
 
 def propagate(graph):
     graph.set_visibility(VIS_LANG)
-    #graph.cognate_visibility(VIS_LANG)
+    # graph.cognate_visibility(VIS_LANG)
     for n in graph.nodes:
         if n.de_id is None:
             de_n = n
@@ -463,13 +470,14 @@ if __name__ == '__main__':
     # opt.add_option('--f2e', dest='f2e', default='../web/newstest2013/lex1.f2e.small')
     (options, _) = opt.parse_args()
     if options.input_mt == '' or options.output_mt == '' or options.intermediate == '' or options.input_parse == '':
-        sys.stderr.write('Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT -e INTERMEDIATE_EDGES -p INPUT_MT_PARSED -s SPLIT_STRING\n')
+        logit(
+            'Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT -e INTERMEDIATE_EDGES -p INPUT_MT_PARSED -s SPLIT_STRING\n')
         exit(-1)
     else:
         pass
     if options.split_string == '':
         USE_SPLIT = False
-        sys.stderr.write('no split string, split every 5 sentences')
+        logit('no split string, split every 5 sentences')
     else:
         USE_SPLIT = True
 
@@ -485,8 +493,12 @@ if __name__ == '__main__':
     eps_word_alignment = 0
     all_coe_sentences = []
     coe_sentences = []
-    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[:200]:
-        sys.stderr.write('len all coe ' + str(len(all_coe_sentences)) + ' len coe ' + str(len(coe_sentences)) + ' using split: ' + str(USE_SPLIT) + 'split string:' + options.split_string +  '\n')
+    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[:50]:
+        if len(input_line.split()) < 3 or len(input_line.split()) > 20:
+            # SKIP SHORT AND LONG SENTENCES
+            continue
+        logit('len all coe ' + str(len(all_coe_sentences)) + ' len coe ' + str(
+            len(coe_sentences)) + ' using split: ' + str(USE_SPLIT) + 'split string:' + options.split_string + '\n')
         if USE_SPLIT:
             if input_line.lower().strip() == options.split_string.lower().strip():
                 if len(coe_sentences) > 0:
@@ -498,7 +510,7 @@ if __name__ == '__main__':
                 all_coe_sentences.append(coe_sentences)
                 coe_sentences = []
 
-        sys.stderr.write('SENT' + str(sent_idx) + '\n')
+        logit('SENT' + str(sent_idx) + '\n')
         input_sent = input_line.strip().split()
         output_items = output_line.strip().split('|')
         output_phrases = [oi.strip() for idx, oi in enumerate(output_items) if idx % 2 == 0 and oi.strip() != '']
@@ -510,8 +522,8 @@ if __name__ == '__main__':
         input_tok_group = [-1] * len(input_sent)
         output_tok_group = [-1] * len(output_sent)
 
-        sys.stderr.write('input sent:' + ' '.join(input_sent) + '\n')
-        sys.stderr.write('output sent:' + ' '.join(output_sent) + '\n')
+        logit('input sent:' + ' '.join(input_sent) + '\n')
+        logit('output sent:' + ' '.join(output_sent) + '\n')
 
         coe_sentence = Sentence(sent_idx, ' '.join(input_sent), ' '.join(output_sent), None)
         coe_sentence.initial_order_by = VIS_LANG
@@ -580,8 +592,8 @@ if __name__ == '__main__':
             assert 0 not in input_coverage
 
         coe_sentence.graphs = sort_groups_by_lang(coe_sentence.graphs, VIS_LANG)
-        sys.stderr.write(' '.join([str(i) for i in input_tok_group]) + '\n')
-        sys.stderr.write(' '.join([str(i) for i in output_tok_group]) + '\n')
+        logit(' '.join([str(i) for i in input_tok_group]) + '\n')
+        logit(' '.join([str(i) for i in output_tok_group]) + '\n')
 
         split_inp, split_out, split_orderings = mark_swaps_transfers_interrupts(
             input_tok_group,
@@ -589,12 +601,12 @@ if __name__ == '__main__':
         split_sets = get_split_sets(split_inp, split_out)
         swap_rules = get_swap_rules(coe_sentence, input_tok_group, output_tok_group, input_parse, split_sets, VIS_LANG)
         for sr in swap_rules:
-            sys.stderr.write('swaps-pets:' + str(sr) + '\n')
+            logit('swaps-pets:' + str(sr) + '\n')
 
         split_inp_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_inp.items()])
-        sys.stderr.write('split inp:' + split_inp_str + '\n')
+        logit('split inp:' + split_inp_str + '\n')
         split_out_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_out.items()])
-        sys.stderr.write('split out:' + split_out_str + '\n')
+        logit('split out:' + split_out_str + '\n')
         if len(split_inp) or len(split_out):
             pass  # pdb.set_trace()
         swap_objs = []
@@ -675,13 +687,16 @@ if __name__ == '__main__':
             for n in g.nodes:
                 assert n.en_id is not None and n.de_id is not None
         propagate_split_info(coe_sentence)
-        # sys.stderr.write('done sent' + str(sent_idx) + '\n')
+        # logit('done sent' + str(sent_idx) + '\n')
 
         json_sentence_str = json.dumps(coe_sentence, indent=4, sort_keys=True)
         coe_sentences.append(' '.join(json_sentence_str.split()))
     if len(coe_sentences) > 0:
         all_coe_sentences.append(coe_sentences)
-    sys.stderr.write('done' + str(eps_word_alignment) + ' errors\n')
+    logit('done' + str(eps_word_alignment) + ' errors\n', priority=10)
+    # FLATTEN THE LIST
+    all_coe_sentences = list(itertools.chain.from_iterable(all_coe_sentences))
+    logit('size:' + str(len(all_coe_sentences)) + '\n', priority=10)
     print 'var json_str_arr = ', all_coe_sentences
     print 'module.exports.Story1 = json_str_arr'
 

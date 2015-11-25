@@ -1,186 +1,163 @@
 //experiment vars
-var sentences_per_page = 5
-var max_hits = 3
 exports.ui_version = 0
+var max_hits = 9999999999
 
 // vendor libraries
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
-var bcrypt = require('bcrypt-nodejs');
-var passport = require('passport');
 var _ = require('underscore');
-var LocalStrategy = require('passport-local').Strategy;
-var yargs = require('yargs').usage('Usage: $0 --uiver [1,0] --port [3000 ... 4000] --story [0..4]').demand(['uiver', 'port', 'story']).argv;
-exports.ui_version = yargs.uiver
 
-// routes
-var route = require('./route');
-// model
+// custom libraries
+var route = require('./route')
 var Model = require('./model');
+var yargs = require('yargs').usage('Usage: $0 --uiver [0,1] --host [ec2,localhost] --story [0...4]').demand(['uiver', 'host', 'story']).argv;
 
+// setup app
 var app = express();
-
-passport.use(new LocalStrategy(function (username, password, done) {
-	console.log(username + ' un escaped')
-	username = escapeHTML(username)
-	password = escapeHTML(password)
-	console.log(username + ' escaped')
-	var username_unescaped = unescapeHTML(username)
-	console.log(username_unescaped + ' unescaped again')
-	new Model.User({username: username}).fetch().then(function (data) {
-		var user = data;
-		if (user === null) {
-			console.log('tried to get username' + username + ' but no result found')
-			return done(null, false, {message: 'Invalid username or password'});
-		} else {
-			user = data.toJSON();
-			//if (!bcrypt.compareSync(password, user.password)) {
-			if (password.localeCompare(user.password) != 0) {
-				console.log('tried to get match' + password + ' with ' + user.password)
-				return done(null, false, {message: 'Invalid username or password'});
-			} else {
-				return done(null, user);
-			}
-		}
-	});
-}));
-
-passport.serializeUser(function (user, done) {
-	console.log('serializeUser', user.username)
-	done(null, user.username);
-});
-
-passport.deserializeUser(function (username, done) {
-	console.log('deserializeUser', username)
-	new Model.User({username: username}).fetch().then(function (user) {
-		done(null, user);
-	});
-});
-
-app.set('port', process.env.PORT || yargs.port);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.static(__dirname + '/public/'));
-app.use(cookieParser());
-app.use(bodyParser());
-app.use(session({secret: 'secret strategic xxzzz code'}));
-app.use(passport.initialize());
-app.use(passport.session());
 
 // GET
 app.get('/', route.index);
 
-// signin
-// GET
-app.get('/signin', route.signIn);
-// POST
-app.post('/signin', route.signInPost);
-
-// signup
-// GET
-app.get('/signup', route.signUp);
-// POST
-app.post('/signup', route.signUpPost);
-
-// logout
-// GET
-app.get('/signout', route.signOut);
-
-app.get('/logout', function (req, res) {
-	console.log("trying to logout....")
-	req.session.destroy()
-	req.logout()
-	res.redirect('/signin');
-});
-/********************************/
-// 404 not found
 app.use(route.notFound404);
-
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var https = null
+if (yargs.host == 'ec2') {
+	app.set('port', process.env.PORT || 443);
+	fs = require('fs')
+	var sslOptions = {
+		key: fs.readFileSync('./ssl/privatekey.key'),
+		cert: fs.readFileSync('./ssl/macaroniclearning_com_ee.crt'),
+	};
+	https = require('https').createServer(sslOptions, app);
+} else if (yargs.host == 'localhost') {
+	app.set('port', process.env.PORT || 3030);
+	https = require('http').createServer(app);
+}
+exports.ui_version = yargs.uiver
+var io = require('socket.io')(https);
 var story_num = parseInt(yargs.story)
 var JsonSentences = null
 if (story_num == 0) {
-    JsonSentences = require('./stories/jsonsentences')
-}else if (story_num == 1) {
-    JsonSentences = require('./stories/le_petit_prince.fr')
-}else if (story_num == 2) {
-    JsonSentences = require('./stories/jde.fr')
-}else if (story_num == 3) {
-    JsonSentences = require('./stories/nachrichtenleicht.de')
-}else {
-    JsonSentences = require('./stories/jsonsentences')
+	JsonSentences = require('./stories/jsonsentences')
+} else if (story_num == 1) {
+	JsonSentences = require('./stories/le_petit_prince.fr')
+} else if (story_num == 2) {
+	JsonSentences = require('./stories/jde.fr')
+} else if (story_num == 3) {
+	JsonSentences = require('./stories/nachrichtenleicht.de')
+} else {
+	JsonSentences = require('./stories/jsonsentences')
 }
 
 var JsonSentencesPreview = require('./stories/jsonsentences-preview')
+var sentences_per_page = 5
 
 io.on('connection', function (socket) {
 	var clientId = socket.id
-	console.log("connected to client..." + clientId)
+	console.log("made socket connection to client..." + clientId)
 	socket.on('logEvent', function (msg) {
 		new Model.Records(msg).save().then(function (data) {
 			console.log("new record added:" + data.attributes.id)
 		});
-		//io.to(clientId).emit('chat message', msg);
 	});
-
 	socket.on('logTranslation', function (msg) {
 		msg.translation = unescapeHTML(msg.translation)
 		new Model.Translations({username: msg.username, ui_version: parseInt(msg.ui_version), sentence_id: parseInt(msg.sentence_id), state: msg.state, input: msg.input, translation: unescapeHTML(msg.translation)}).save().then(function (data) {
 			console.log("new translation added:" + data.attributes.id)
 		})
 	})
-
 	socket.on('completedTask', function (msg) {
+		console.log('got completion from user!')
+		var sentences_completed = msg.sentences_completed
+		_.each(sentences_completed, function (s) {
+			new Model.UserCompletedSentences({'username': msg.username, 'sentence_id': s}).save().then(function (done) {
+				console.log('saved user completed sentence.')
+			});
 
-		if (msg.username === "GUEST") {
-			guestThankyou(clientId, io)
+			Model.CompletedSentences.where('sentence_id', s).fetch().then(function (sentenceFetch) {
+				console.log("updating number of times" + s + " has been completed...")
+				console.log("fetched:" + sentenceFetch)
+				if (sentenceFetch == null) {
+					new Model.CompletedSentences({'sentence_id': s, 'times_completed': 1}).save().then(function (done) {
+						console.log('inserted new sentence completion record.')
+					})
+				} else {
+					console.log("here....")
+					new Model.CompletedSentences().where('sentence_id', s).save({'times_completed': parseInt(sentenceFetch.attributes.times_completed) + 1}, {method: 'update'}).then(function (done) {
+						console.log('updated sentence_id', done.times_completed)
+					})
+				}
+			})
+		})
+		new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
+			Model.User.where('username', msg.username).fetch().then(function (resData) {
+				console.log('sending new content...')
+				sliceContent(JsonSentences.Story1, resData, clientId, io)
+				//nextHit(resData, content, clientId, io)
+			})
+		})
+
+	});
+
+	socket.on('requestUserProgress', function (msg) {
+		console.log('received user progress request...')
+		if (msg.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
+			Model.User.where('username', msg.username).fetch().then(function (resData) {
+				if (resData != null) {
+					console.log("no assignment but found user, with progress ", resData.attributes.progress);
+					console.log(JsonSentences.Story1.length)
+					var content = sliceContent(JsonSentencesPreview.Preview, resData, clientId, io)
+					//io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
+				} else {
+					console.log("no assignment no user")
+					var content = sliceContent(JsonSentences.Story1, resData, clientId, io)
+					//io.to(clientId).emit('userProgress', { data: content, progress: 0, points_earned: 0})
+				}
+			})
+			// a visitor or a mturk previewer
+
 		} else {
-			console.log('got completion from user!')
+			console.log("mturk user with assignment .." + msg.username)
+			//a real mturk user
+			Model.User.where('username', msg.username).fetch().then(function (resData) {
+				if (resData != null) {
+					console.log("found username:" + msg.username + " returning user progress" + resData.attributes.progress)
+					sliceContent(JsonSentences.Story1, resData, clientId, io)
 
-			new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
-				Model.User.where('username', msg.username).fetch().then(function (resData) {
-					console.log('sending new content...')
-					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
+				} else {
+					//insert new user in database
+					new Model.User({username: msg.username, progress: 0, points_earned: 0}).save().then(function (data) {
+						console.log("created new mturk user..." + data.attributes.id)
+						sliceContent(JsonSentences.Story1, data, clientId, io)
+						//io.to(clientId).emit('userProgress', {data: content, progress: data.attributes.progress, points_earned: data.attributes.points_earned})
 
-					nextHit(resData, content, clientId, io)
-				})
+					})
+				}
 			})
 		}
 
 	})
-
-	socket.on('requestUserProgress', function (msg) {
-		console.log("mturk user with username .." + msg.username)
-		Model.User.where('username', msg.username).fetch().then(function (resData) {
-			if (resData != null) {
-				console.log("found username:" + msg.username + " returning user progress" + resData.attributes.progress)
-				if (msg.username === "GUEST") {
-					var content = sliceContent(JsonSentencesPreview.Preview, 0, sentences_per_page)
-				} else {
-					var content = sliceContent(JsonSentences.Story1, parseInt(resData.attributes.progress), sentences_per_page)
-				}
-				nextHit(resData, content, clientId, io)
-
-			} else {
-				//insert new user in database
-				new Model.User({username: msg.username, displayname: msg.username, progress: 0, points_earned: 0}).save().then(function (data) {
-					console.log("created new mturk user..." + data.attributes.id)
-					var content = sliceContent(JsonSentences.Story1, 0, sentences_per_page)
-					io.to(clientId).emit('userProgress', {data: content, progress: data.attributes.progress, points_earned: data.attributes.points_earned})
-
-				})
-			}
-		})
-	});
-
 });
 
-var server = http.listen(app.get('port'), function (err) {
-	if (err) throw err;
-	var message = 'Server is running @ http://localhost:' + server.address().port;
+var server = https.listen(app.get('port'), function (err) {
+	if (yargs.host == 'ec2') {
+		try {
+			console.log('Old user id' + process.getuid() + ', Old group id' + process.getgid())
+			process.setgid('wheel')
+			process.setuid('ec2-user')
+			console.log('New user id' + process.getuid() + ' New group id' + process.getgid())
+		} catch (err) {
+			throw err
+		}
+		var message = 'Server is running @ https://macaroniclearning.com:' + server.address().port;
+	} else {
+		var message = 'Server is running @ https://localhost:' + server.address().port;
+	}
+
 	console.log(message);
 });
 
@@ -192,28 +169,77 @@ function escapeHTML(unsafe_str) {
 	return encodeURI(unsafe_str).replace(/\"/g, '\"').replace(/\'/g, '\'');
 }
 
-function guestThankyou(clientId, io) {
-	io.to(clientId).emit('thankyou', {username: "GUEST"})
-	return  true;
-}
-
 function nextHit(resData, content, clientId, io) {
-	if (parseInt(resData.attributes.progress) > max_hits) {
-		console.log("show thank you page to user:", resData.attributes.username)
-		io.to(clientId).emit('thankyou', {points_earned: resData.attributes.points_earned, confirmation: resData.attributes.confirmation_string})
-	} else {
-		console.log("show next set of hit questions, ", max_hits, resData.attributes.progress, resData.attributes.username)
-		io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
-	}
+	console.log("show next set of hit questions, ", max_hits, resData.attributes.progress, resData.attributes.username)
+	io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 
 }
-function sliceContent(fullcontent, progress, sentences_per_page) {
-	//var st = progress * sentences_per_page
-	//var end = st + sentences_per_page
-	//var content = fullcontent.slice(st, end)
-  console.log('len full: ' + fullcontent.length)
-  var content = fullcontent[parseInt(progress)]
-  console.log('len content: ' + content.length)
-	return content
-}
 
+function sliceContent(fullcontent, userData, clientId, io) {
+	var username = userData.attributes.username
+	console.log("called...", fullcontent.length)
+	var sentences_completed = {}
+	var content_objs = {}
+
+	var return_id = null
+	console.log("LEN:", Object.keys(sentences_completed).length)
+	new Model.CompletedSentences().fetchAll().then(function (rd) {
+		console.log("query for all completed sentences")
+		if (rd != null) {
+			var max_seen = 0
+			_.each(rd.models, function (model) {
+				if (model.attributes.times_completed > max_seen) {
+					max_seen = model.attributes.times_completed
+				}
+			})
+
+			_.each(fullcontent, function (s) {
+				var s_obj = JSON.parse(s);
+				sentences_completed[s_obj.id] = max_seen + 1
+				console.log('initial', s_obj.id, sentences_completed[s_obj.id])
+				content_objs[s_obj.id] = s
+			})
+
+			_.each(rd.models, function (model) {
+				console.log('updaing', model.attributes.sentence_id)
+				sentences_completed[model.attributes.sentence_id] = 1 + (max_seen - model.attributes.times_completed)
+
+			})
+		}
+		console.log("LEN:", Object.keys(sentences_completed).length)
+		Model.UserCompletedSentences.where('username', username).fetchAll().then(function (rd) {
+			if (rd != null) {
+
+				_.each(rd.models, function (model) {
+					console.log('deleting', model.attributes.sentence_id)
+					delete sentences_completed[model.attributes.sentence_id]
+				})
+				console.log('done deleting...')
+			}
+			console.log("LEN:", Object.keys(sentences_completed).length)
+			console.log("WTF!!")
+			var cumilative_completed = {}
+			var sum = 0
+			_.each(sentences_completed, function (v, k) {
+				v = parseInt(v)
+				console.log('final', sentences_completed[k], k, v)
+				cumilative_completed[k] = [parseInt(sum), parseInt(sum) + parseInt(v)]
+				sum = parseInt(sum) + parseInt(v)
+			})
+
+			var r = Math.random() * sum
+
+			_.each(cumilative_completed, function (v, k) {
+				console.log(v[0], v[1], r, k)
+				if (v[0] < r && v[1] > r) {
+					return_id = k
+				}
+			})
+			console.log('returning...', return_id)
+			nextHit(userData, [content_objs[return_id]], clientId, io)
+
+		})
+
+	})
+
+}
