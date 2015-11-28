@@ -13,7 +13,8 @@ var index = function (req, res, next) {
 			res.render('preview', {title: "mturk page", ui_version: App.ui_version, user: { assignmentId: req.query.assignmentId, learnerType: 'previewer', username: req.query.workerId}})
 		} else {
 			console.log('uiver:' + App.ui_version)
-			res.render('index', {title: "mturk page", ui_version: App.ui_version, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
+			console.log('hitid:' + req.query.hitId)
+			res.render('index', {title: "mturk page", ui_version: App.ui_version, hitId: req.query.hitId, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
 		}
 	} else {
 		res.render('index', {title: "mturk page", ui_version: App.ui_version, user: { assignmentId: null, learnerType: 'visitor', workerId: '0'}})
