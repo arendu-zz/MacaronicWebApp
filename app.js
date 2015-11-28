@@ -41,21 +41,15 @@ if (yargs.host == 'ec2') {
 var io = require('socket.io')(https);
 var story_num = parseInt(yargs.story)
 var JsonSentences = null
-var JsonSentencesPreview = null
 if (story_num == 0) {
-	JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jsonsentences')
 } else if (story_num == 1) {
-	JsonSentencesPreview = require('./stories/le_petit_prince.fr.preview')
 	JsonSentences = require('./stories/le_petit_prince.fr')
 } else if (story_num == 2) {
-	JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jde.fr')
 } else if (story_num == 3) {
-	JsonSentencesPreview = require('./stories/nachrichtenleicht.de.preview')
 	JsonSentences = require('./stories/nachrichtenleicht.de')
 } else {
-	JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jsonsentences')
 }
 
