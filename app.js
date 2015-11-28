@@ -115,7 +115,7 @@ io.on('connection', function (socket) {
 				if (resData != null) {
 					console.log("no assignment but found user, with progress ", resData.attributes.progress);
 					console.log(JsonSentences.Story1.length)
-					sliceContent(JsonSentencesPreview.Preview, resData, clientId, io)
+					sliceContent(JsonSentences.Story1, resData, clientId, io)
 					//io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {
 					console.log("no assignment no user")

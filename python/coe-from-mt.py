@@ -493,7 +493,7 @@ if __name__ == '__main__':
     eps_word_alignment = 0
     all_coe_sentences = []
     coe_sentences = []
-    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[:50]:
+    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[-100:]:
         if len(input_line.split()) < 3 or len(input_line.split()) > 20:
             # SKIP SHORT AND LONG SENTENCES
             continue
