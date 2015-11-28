@@ -15,7 +15,8 @@ DROP TABLE IF EXISTS mturkUserCompletedSentences;
 CREATE TABLE mturkUserCompletedSentences(
     id integer primary key auto_increment,
     username varchar(255) not null,
-    sentence_id integer not null
+    sentence_id integer not null,
+    hit_id text
 )engine=innodb charset utf8;
 
 DROP TABLE IF EXISTS mturkCompletedSentences;

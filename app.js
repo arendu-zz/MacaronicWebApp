@@ -43,19 +43,19 @@ var story_num = parseInt(yargs.story)
 var JsonSentences = null
 var JsonSentencesPreview = null
 if (story_num == 0) {
-  JsonSentencesPreview = require('./stories/jde.fr.preview')
+	JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jsonsentences')
 } else if (story_num == 1) {
-  JsonSentencesPreview = require('./stories/le_petit_prince.fr.preview')
+	JsonSentencesPreview = require('./stories/le_petit_prince.fr.preview')
 	JsonSentences = require('./stories/le_petit_prince.fr')
 } else if (story_num == 2) {
-  JsonSentencesPreview = require('./stories/jde.fr.preview')
+	JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jde.fr')
 } else if (story_num == 3) {
-  JsonSentencesPreview = require('./stories/nachrichtenleicht.de.preview')
+	JsonSentencesPreview = require('./stories/nachrichtenleicht.de.preview')
 	JsonSentences = require('./stories/nachrichtenleicht.de')
 } else {
-JsonSentencesPreview = require('./stories/jde.fr.preview')
+	JsonSentencesPreview = require('./stories/jde.fr.preview')
 	JsonSentences = require('./stories/jsonsentences')
 }
 
@@ -79,7 +79,7 @@ io.on('connection', function (socket) {
 		console.log('got completion from user!')
 		var sentences_completed = msg.sentences_completed
 		_.each(sentences_completed, function (s) {
-			new Model.UserCompletedSentences({'username': msg.username, 'sentence_id': s}).save().then(function (done) {
+			new Model.UserCompletedSentences({'username': msg.username, 'hit_id': msg.hitId, 'sentence_id': s}).save().then(function (done) {
 				console.log('saved user completed sentence.')
 			});
 
@@ -186,7 +186,7 @@ function sliceContent(fullcontent, userData, clientId, io) {
 	var content_objs = {}
 
 	var return_id = null
-	console.log("LEN:", Object.keys(sentences_completed).length)
+
 	new Model.CompletedSentences().fetchAll().then(function (rd) {
 		if (rd != null) {
 			var max_seen = 0
@@ -218,7 +218,7 @@ function sliceContent(fullcontent, userData, clientId, io) {
 			var sum = 0
 			_.each(sentences_completed, function (v, k) {
 				v = parseInt(v)
-				//console.log('final', sentences_completed[k], k, v)
+				console.log('final', sentences_completed[k], k, v)
 				cumilative_completed[k] = [parseInt(sum), parseInt(sum) + parseInt(v)]
 				sum = parseInt(sum) + parseInt(v)
 			})
@@ -231,8 +231,8 @@ function sliceContent(fullcontent, userData, clientId, io) {
 					return_id = k
 				}
 			})
-			//console.log('returning...', return_id)
-			//nextHit(userData, [content_objs[return_id]], clientId, io)
+			console.log('returning...', return_id)
+			nextHit(userData, [content_objs[return_id]], clientId, io)
 
 		})
 

@@ -24,6 +24,8 @@ html
             $(document).ready(function () {
                 var socket = io();
                 setup("#{user.username}", socket, parseInt("#{ui_version}"), false)
+                hitId = #{hitId}
+
             });
             function post_it(parameters) {
                 console.log("called post...", parameters)
