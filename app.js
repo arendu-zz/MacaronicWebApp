@@ -41,17 +41,24 @@ if (yargs.host == 'ec2') {
 var io = require('socket.io')(https);
 var story_num = parseInt(yargs.story)
 var JsonSentences = null
+var JsonSentencesPreview = null
 if (story_num == 0) {
 	JsonSentences = require('./stories/jsonsentences')
+	JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
 } else if (story_num == 1) {
 	JsonSentences = require('./stories/le_petit_prince.fr')
+	JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
 } else if (story_num == 2) {
 	JsonSentences = require('./stories/jde.fr')
+	JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
 } else if (story_num == 3) {
 	JsonSentences = require('./stories/nachrichtenleicht.de')
+	JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
 } else {
 	JsonSentences = require('./stories/jsonsentences')
+	JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
 }
+JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
 
 var sentences_per_page = 5
 
@@ -100,6 +107,11 @@ io.on('connection', function (socket) {
 			})
 		})
 
+	});
+
+	socket.on('requestPreview', function (msg) {
+		var content = JsonSentencesPreview.Preview.slice(14, 15)
+		io.to(clientId).emit('previewContent', {data: content});
 	});
 
 	socket.on('requestUserProgress', function (msg) {
