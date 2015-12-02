@@ -466,12 +466,14 @@ if __name__ == '__main__':
     opt.add_option('-e', dest='intermediate', default='')
     # opt.add_option('-p', dest='input_parse', default='../web/newstest2013/newstest2013.input.tok.1.parsed')
     opt.add_option('-p', dest='input_parse', default='')
+    opt.add_option('-d', dest='is_demo', default='0')
+    opt.add_option('--out', dest='output_stem', default='')
     # opt.add_option('--e2f', dest='e2f', default='../web/newstest2013/lex1.e2f.small')
     # opt.add_option('--f2e', dest='f2e', default='../web/newstest2013/lex1.f2e.small')
     (options, _) = opt.parse_args()
-    if options.input_mt == '' or options.output_mt == '' or options.intermediate == '' or options.input_parse == '':
+    if options.input_mt == '' or options.output_mt == '' or options.intermediate == '' or options.input_parse == '' or options.output_stem == '':
         logit(
-            'Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT -e INTERMEDIATE_EDGES -p INPUT_MT_PARSED -s SPLIT_STRING\n')
+            'Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT -e INTERMEDIATE_EDGES -p INPUT_MT_PARSED -s SPLIT_STRING --out OUTPUT_STEM\n')
         exit(-1)
     else:
         pass
@@ -480,7 +482,7 @@ if __name__ == '__main__':
         logit('no split string, split every 5 sentences')
     else:
         USE_SPLIT = True
-
+    is_demo = int(options.is_demo) == 1
     input_parsed = get_dep_parse(options.input_parse)
     input_mt = codecs.open(options.input_mt, 'r', 'utf-8').readlines()
     output_mt = codecs.open(options.output_mt, 'r', 'utf-8').readlines()
@@ -493,7 +495,8 @@ if __name__ == '__main__':
     eps_word_alignment = 0
     all_coe_sentences = []
     coe_sentences = []
-    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[-100:]:
+    sentences_used = []
+    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[:200]:
         if len(input_line.split()) < 3 or len(input_line.split()) > 20:
             # SKIP SHORT AND LONG SENTENCES
             continue
@@ -512,6 +515,7 @@ if __name__ == '__main__':
 
         logit('SENT' + str(sent_idx) + '\n')
         input_sent = input_line.strip().split()
+        sentences_used.append(input_line.strip())
         output_items = output_line.strip().split('|')
         output_phrases = [oi.strip() for idx, oi in enumerate(output_items) if idx % 2 == 0 and oi.strip() != '']
         output_sent = ' '.join(output_phrases).split()
@@ -697,8 +701,31 @@ if __name__ == '__main__':
     # FLATTEN THE LIST
     all_coe_sentences = list(itertools.chain.from_iterable(all_coe_sentences))
     logit('size:' + str(len(all_coe_sentences)) + '\n', priority=10)
-    print 'var json_str_arr = ', all_coe_sentences
-    print 'module.exports.Story1 = json_str_arr'
+    main_coe_sentences = all_coe_sentences[:-1]
+    preview_coe_sentences = all_coe_sentences[-1:]
+    main_output = '\n'.join(['var json_str_arr = ' + str(main_coe_sentences), 'module.exports.Story1 = json_str_arr'])
+    preview_output = '\n'.join(
+        ['var json_str_arr = ' + str(preview_coe_sentences), 'module.exports.Preview = json_str_arr'])
+    main_sentences = '\n'.join(sentences_used[:-1])
+    preview_sentences = '\n'.join(sentences_used[-1:])
+    f = codecs.open(options.output_stem + '.js', 'w', 'utf8')
+    f.write(main_output)
+    f.flush()
+    f.close()
+    f = codecs.open(options.output_stem + '.sent', 'w', 'utf8')
+    f.write(main_sentences)
+    f.flush()
+    f.close()
+    f = codecs.open(options.output_stem + '.preview.js', 'w', 'utf8')
+    f.write(preview_output)
+    f.flush()
+    f.close()
+    f = codecs.open(options.output_stem + '.preview.sent', 'w', 'utf8')
+    f.write(preview_sentences)
+    f.flush()
+    f.close()
+
+
 
 
 
