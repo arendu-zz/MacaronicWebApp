@@ -6,12 +6,11 @@ from optparse import OptionParser
 from itertools import groupby
 import operator
 
-'''reload(sys)
+reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
-'''
 
 
 def logit(str, priority=10):
