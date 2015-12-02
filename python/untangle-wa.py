@@ -225,24 +225,22 @@ if __name__ == '__main__':
     opt = OptionParser()
 
     opt.add_option('-i', dest='input_mt', default='')
-    opt.add_option('-r', dest='original_mt', default='')
     opt.add_option('-o', dest='output_mt', default='')
     (options, _) = opt.parse_args()
-    if options.original_mt == '' or options.input_mt == '' or options.output_mt == '':
-        logit('Usage: python coe-from-mt.py -r ORIGINAL_MT -i INPUT_MT -o OUTPUT_MT\n', 10)
+    if options.input_mt == '' or options.output_mt == '':
+        logit('Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT\n', 10)
         exit(-1)
     else:
         pass
 
     input_mt = codecs.open(options.input_mt, 'r', 'utf-8').readlines()
-    original_mt = codecs.open(options.original_mt, 'r', 'utf-8').readlines()
     output_mt = codecs.open(options.output_mt, 'r', 'utf-8').readlines()
     assert len(input_mt) == len(output_mt)
     sent_idx = 0
     eps_word_alignment = 0
     all_coe_sentences = []
     coe_sentences = []
-    for original_line, input_line, output_line in zip(original_mt, input_mt, output_mt)[:]:
+    for input_line, output_line in zip(input_mt, output_mt)[:]:
         logit('SENT' + str(sent_idx) + '\n')
         input_sent = input_line.strip().split()
         output_items = output_line.strip().split('|')
