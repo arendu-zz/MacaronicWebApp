@@ -30,6 +30,7 @@ CREATE TABLE mturkCompletedSentences(
 DROP TABLE IF EXISTS mturkRecords;
 CREATE TABLE mturkRecords(
     id integer primary key auto_increment,
+    sentence_id integer not null,
     username varchar(255) not null,
     ui_version int not null,
     rule_type text,
@@ -45,8 +46,8 @@ DROP TABLE if exists mturkTranslations;
 CREATE TABLE mturkTranslations(
   id integer primary key auto_increment,
   username varchar(255) not null,
-  ui_version int not null,
-  sentence_id int not null,
+  ui_version integer not null,
+  sentence_id integer not null,
   state text,
   input text not null,
   translation text not null,
