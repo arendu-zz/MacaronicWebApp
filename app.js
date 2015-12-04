@@ -223,7 +223,7 @@ function sliceContent(fullcontent, userData, clientId, io) {
 			var sum = 0
 			_.each(sentences_completed, function (v, k) {
 				v = parseInt(v)
-				console.log('final', sentences_completed[k], k, v)
+				//console.log('final', sentences_completed[k], k, v)
 				cumilative_completed[k] = [parseInt(sum), parseInt(sum) + parseInt(v)]
 				sum = parseInt(sum) + parseInt(v)
 			})
