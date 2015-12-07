@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 __author__ = 'arenduchintala'
 import sys
 import codecs
@@ -7,12 +8,12 @@ from itertools import groupby
 import operator
 from   pprint import pprint
 
-'''reload(sys)
+reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
-'''
+
 
 
 def match_splits(d, tokens_in_key, unmatched_in_key, tokens_in_val, unmatched_in_val):
@@ -188,7 +189,7 @@ if __name__ == '__main__':
     opt.add_option('-a', dest='output_mt', default='')
     (options, _) = opt.parse_args()
     if options.original_mt == '' or options.input_mt == '' or options.output_mt == '':
-        logit('Usage: python un-preorder.py -o ORIGINAL_INPUT -i PRE_REORDERED_MT -a MT_OUTPUT\n', 20)
+        logit('Usage: python un-preorder.py -o ORIGINAL_MT_INPUT -i PRE_REORDERED_MT_INPUT -a MT_OUTPUT\n', 20)
         exit(-1)
     else:
         input_mt = codecs.open(options.input_mt, 'r', 'utf8').read().strip().split('\n')

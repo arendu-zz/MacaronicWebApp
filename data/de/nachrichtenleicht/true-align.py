@@ -87,11 +87,11 @@ def merge(merged_wa):
 
 if __name__ == '__main__':
     opt = OptionParser()
-    opt.add_option('-w', dest='wa', default='nachrichtenleicht.de.wa.untangled')
-    opt.add_option('-a', dest='alignment', default='nachrichtenleicht.de.i2o.alignments')
+    opt.add_option('-w', dest='wa', default='')
+    opt.add_option('-a', dest='alignment', default='')
     (options, _) = opt.parse_args()
     if options.wa == '' or options.alignment == '':
-        logit('Usage: python true-align.py -w WA_FILE -a ALIGNMENT_FILE\n', 10)
+        logit('Usage: python true-align.py -w UNTANGLED_WA_FILE -a ALIGNMENT_FILE\n', 10)
         exit(-1)
     else:
         pass
