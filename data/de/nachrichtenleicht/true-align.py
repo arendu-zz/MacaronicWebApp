@@ -13,6 +13,7 @@ sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 
 
+
 def logit(str, priority=10):
     if priority > 5:
         sys.stderr.write(str)
@@ -56,13 +57,41 @@ def get_new_spans_and_wa(input_phrase, output_phrase):
         raise BaseException('serious shit with untangle...')
 
 
+def merge(merged_wa):
+    new_merged_wa = {}
+    for k, lst in merged_wa.iteritems():
+        ks = [int(i) for i in k.strip().split('-')]
+        if ks[0] != ks[1]:
+            assert len(lst) == 1
+            new_merged_wa[k] = (lst[0][0], k, lst[0][1], lst[0][2])
+        else:
+            if len(lst) > 1:
+                m = min(lst)[0]
+                new_op = ' '.join([op for op_idx, op, wa_list in lst])
+                new_wa_str = 'wa=' + ' '.join(['0-' + str(_idx) for _idx, new_op_tok in enumerate(new_op.split())])
+                new_lst = (m, k, new_op, new_wa_str)
+                if len(lst) > 1:
+                    for op_idx, op, wa_str in lst:
+                        if wa_str == 'wa=0-0':
+                            pass
+                        else:
+                            #pdb.set_trace()
+                            # raise BaseException('what is wa?')
+                            pass
+                new_merged_wa[k] = new_lst
+            else:
+                new_merged_wa[k] = (lst[0][0], k, lst[0][1], lst[0][2])
+    full_list = sorted(new_merged_wa.values())
+    return full_list
+
+
 if __name__ == '__main__':
     opt = OptionParser()
-    opt.add_option('-w', dest='wa', default='')
-    opt.add_option('-a', dest='alignment', default='')
+    opt.add_option('-w', dest='wa', default='nachrichtenleicht.de.wa.untangled')
+    opt.add_option('-a', dest='alignment', default='nachrichtenleicht.de.i2o.alignments')
     (options, _) = opt.parse_args()
     if options.wa == '' or options.alignment == '':
-        logit('Usage: python align-with-wa.py -w WA_FILE -a ALIGNMENT_FILE\n', 10)
+        logit('Usage: python true-align.py -w WA_FILE -a ALIGNMENT_FILE\n', 10)
         exit(-1)
     else:
         pass
@@ -81,7 +110,8 @@ if __name__ == '__main__':
         assert len(output_phrases) == len(output_spans)
         assert len(input_spans) == len(output_spans) == len(wa_per_span)
         new_was = []
-        for o_p, o_s, i_s, w_s in zip(output_phrases, output_spans, input_spans, wa_per_span):
+        merged_wa = {}
+        for op_idx, (o_p, o_s, i_s, w_s) in enumerate(zip(output_phrases, output_spans, input_spans, wa_per_span)):
             out_phrase = output_sent[o_s[0]:o_s[1] + 1]
             inp_phrase = input_sent[i_s[0]:i_s[1] + 1]
             # print('\t' + ' '.join(out_phrase) + ' --- ' + ' '.join(inp_phrase))
@@ -90,7 +120,11 @@ if __name__ == '__main__':
             new_i_s, new_w_s = get_new_spans_and_wa(inp_phrase, out_phrase)
             wa_str = 'wa=' + ' '.join([str(w1) + '-' + str(w2) for w1, w2 in new_w_s])
             ph_str = ' '.join(out_phrase) + '|' + str(new_i_s[0]) + '-' + str(new_i_s[1]) + ',' + wa_str + '|'
+            m_wa = str(new_i_s[0]) + '-' + str(new_i_s[1])
+            merged_wa[m_wa] = merged_wa.get(m_wa, []) + [(op_idx, ' '.join(out_phrase), wa_str)]
             # print 'new wa phrase:', ph_str
             new_was.append(ph_str)
-        print ' '.join(new_was)
+        new_merged_was = merge(merged_wa)
+        new_merged_was = [op + '|' + k + ',' + wa_str + '|' for op_idx, k, op, wa_str in new_merged_was]
+        print ' '.join(new_merged_was)
 

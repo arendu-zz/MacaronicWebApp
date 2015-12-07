@@ -16,6 +16,9 @@ sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 
+# import pdb
+from pprint import pprint
+
 VIS_LANG = 'de'
 INPUT_LANG = 'de'
 USE_SPLIT = False
@@ -473,7 +476,8 @@ if __name__ == '__main__':
     (options, _) = opt.parse_args()
     if options.input_mt == '' or options.output_mt == '' or options.intermediate == '' or options.input_parse == '' or options.output_stem == '':
         logit(
-            'Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT -e INTERMEDIATE_EDGES -p INPUT_MT_PARSED -s SPLIT_STRING --out OUTPUT_STEM\n')
+            'Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT -e INTERMEDIATE_EDGES -p INPUT_MT_PARSED -s SPLIT_STRING --out OUTPUT_STEM\n',
+            10)
         exit(-1)
     else:
         pass
@@ -496,7 +500,7 @@ if __name__ == '__main__':
     all_coe_sentences = []
     coe_sentences = []
     sentences_used = []
-    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[:200]:
+    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:200]):
         if len(input_line.split()) < 3 or len(input_line.split()) > 20:
             # SKIP SHORT AND LONG SENTENCES
             continue
@@ -531,19 +535,25 @@ if __name__ == '__main__':
 
         coe_sentence = Sentence(sent_idx, ' '.join(input_sent), ' '.join(output_sent), None)
         coe_sentence.initial_order_by = VIS_LANG
-        sent_idx += 1
+
         assert len(wa_per_span) == len(input_spans) == len(output_spans)
         phrase_dict = {}
         input_coverage = [0] * len(input_sent)
         group_idx = 0
+
         for idx, (out_span, inp_span, wa) in enumerate(zip(output_spans, input_spans, wa_per_span)):
             out_phrase = output_sent[out_span[0]:out_span[1] + 1]
             inp_phrase = input_sent[inp_span[0]:inp_span[1] + 1]
-            # print '\t phrases:', input_sent[inp_span[0]:inp_span[1] + 1], '-', output_sent[out_span[0]:out_span[1] + 1]
-            # print '\t phrase spans:', inp_span, '-', out_span
-            # print '\twa:', wa
-            wa_no_null = insert_epsilon_edge(wa, input_sent[inp_span[0]:inp_span[1] + 1],
-                                             output_sent[out_span[0]:out_span[1] + 1])
+            print '\t phrases:', inp_phrase, '-', out_phrase
+            print '\t phrase spans:', inp_span, '-', out_span
+            print '\twa:', wa
+            i_phrase_wa = [i for i, j in wa]
+            o_phrase_wa = [j for i, j in wa]
+            true_i_phrase = [tok for i, tok in enumerate(inp_phrase) if i in i_phrase_wa]
+            true_o_phrase = [tok for i, tok in enumerate(out_phrase) if i in o_phrase_wa]
+            print '\t true phrases:', true_i_phrase, '-', true_o_phrase
+
+            wa_no_null = wa  # insert_epsilon_edge(wa, true_i_phrase, true_o_phrase)
             sym_coverage, sym_wa = make_symmetric(wa_no_null)
             assert sym_coverage == 0
             untangle = untangle_wa(sym_wa)
@@ -590,7 +600,8 @@ if __name__ == '__main__':
                                                                      intermediate=intermediate_nodes, graph=coe_graph)
                 coe_sentence.graphs.append(coe_graph)
                 group_idx += 1
-
+                #pprint(final_groups)
+                #pdb.set_trace()
         if 0 in input_coverage:
             eps_word_alignment += 1
             assert 0 not in input_coverage
