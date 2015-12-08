@@ -30,7 +30,7 @@ html
             });
             function post_it(parameters) {
                 var params = get_post_parameters()
-                _.merge(params, parameters)
+                _.extend(params, parameters)
                 console.log("called post...", parameters)
                 var form = $('<form></form>');
                 form.attr("method", "post");
