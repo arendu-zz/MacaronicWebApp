@@ -45,6 +45,7 @@ class Node(dict):
         self.de_id = de_id
         self.lang = lang
         self.visible = visible
+        self.visible_order = None
 
         self.graph = None
         self.er_lang = "en"
@@ -327,6 +328,15 @@ class Sentence(dict):
                 return g
         return None
 
+    def set_initial_node_orders(self, lang='en'):
+        for g in self.graphs:
+            for n in g.nodes:
+                if n.visible:
+                    if lang == 'en':
+                        n.visible_order = n.en_id
+                    else:
+                        n.visible_order = n.de_id
+
     @staticmethod
     def from_dict(dict_):
         s = dict_['id']
@@ -396,7 +406,7 @@ if __name__ == '__main__':
 
     propagate(g2)
     s0.graphs.append(g2)
-
+    s0.set_initial_node_orders('en')
     json_sentence_str = json.dumps(s0, indent=4, sort_keys=True)
     all_sent.append(' '.join(json_sentence_str.split()))
 
@@ -493,7 +503,7 @@ if __name__ == '__main__':
 
     propagate(g0)
     s1.graphs.append(g0)
-
+    s1.set_initial_node_orders('en')
     json_sentence_str = json.dumps(s1, indent=4, sort_keys=True)
     all_sent.append(' '.join(json_sentence_str.split()))
 
@@ -529,7 +539,7 @@ if __name__ == '__main__':
     g1.split_to = 'de'
     propagate(g1)
     s2.graphs.append(g1)
-
+    s2.set_initial_node_orders('en')
     json_sentence_str = json.dumps(s2, indent=4, sort_keys=True)
     all_sent.append(' '.join(json_sentence_str.split()))
 
@@ -579,11 +589,11 @@ if __name__ == '__main__':
     g2.split_to = 'de'
     propagate(g2)
     s3.graphs.append(g2)
-
+    s3.set_initial_node_orders('en')
     json_sentence_str = json.dumps(s3, indent=4, sort_keys=True)
     all_sent.append(' '.join(json_sentence_str.split()))
 
-    s4 = Sentence(3, "A B C D", "1 31 2 32 4", None)
+    s4 = Sentence(4, "A B C D", "1 31 2 32 4", None)
     g0 = Graph(0)
     n0 = Node(0, 'A', 0, 0, EN_LANG, True, to_en=False, to_de=True)
     n1 = Node(1, '1', 0, 0, DE_LANG, False, to_en=True, to_de=False)
@@ -637,11 +647,11 @@ if __name__ == '__main__':
     for g in [g0, g1, g2, g3]:
         g.swaps = True
         g.swap_toward_de = [s_obj.make_copy()]
-
+    s4.set_initial_node_orders()
     json_sentence_str = json.dumps(s4, indent=4, sort_keys=True)
     all_sent.append(' '.join(json_sentence_str.split()))
 
-    s4 = Sentence(4, "A Ab B Ac C D", "1 2 3 4", None)
+    s4 = Sentence(5, "A Ab B Ac C D", "1 2 3 4", None)
     s4.initial_order_by = EN_LANG
     g0 = Graph(0)
     n0 = Node(0, 'Aa', 0, 0, EN_LANG, False, to_en=False, to_de=True)
@@ -682,6 +692,7 @@ if __name__ == '__main__':
     propagate(g3)
 
     s4.graphs = [g0, g1, g2, g3]
+    s4.set_initial_node_orders()
     json_sentence_str = json.dumps(s4, indent=4, sort_keys=True)
     all_sent.append(' '.join(json_sentence_str.split()))
     print 'var json_str_arr = ', all_sent

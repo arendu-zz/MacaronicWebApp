@@ -24,6 +24,31 @@ INPUT_LANG = 'de'
 USE_SPLIT = False
 
 
+def check_initial_orders(sent_obj, vis_lang):
+    vis_toks = []
+    if vis_lang == 'de':
+        vis_toks = sent_obj.en.split()
+    else:
+        vis_toks = sent_obj.de.split()
+
+    vis_nodes = []
+    for g in sent_obj.graphs:
+        for n in g.nodes:
+            if n.visible:
+                vis_nodes.append((n.visible_order, n.s))
+
+    vis_nodes.sort()
+    vis_node_toks = [n for i, n in vis_nodes]
+    sys.stderr.write('en: ' + sent_obj.en + '\n')
+    sys.stderr.write(' '.join(vis_toks) + '\n')
+    sys.stderr.write(' '.join(vis_node_toks) + '\n')
+
+    for v_n_tok, v_tok in zip(vis_node_toks, vis_toks):
+        sys.stderr.write(v_n_tok + ' vs ' + v_tok + '\n')
+        assert v_n_tok == v_tok
+    return True
+
+
 def logit(str, priority=0):
     if priority > 5:
         sys.stderr.write(str)
@@ -600,8 +625,8 @@ if __name__ == '__main__':
                                                                      intermediate=intermediate_nodes, graph=coe_graph)
                 coe_sentence.graphs.append(coe_graph)
                 group_idx += 1
-                #pprint(final_groups)
-                #pdb.set_trace()
+                # pprint(final_groups)
+                # pdb.set_trace()
         if 0 in input_coverage:
             eps_word_alignment += 1
             assert 0 not in input_coverage
@@ -701,7 +726,10 @@ if __name__ == '__main__':
 
             for n in g.nodes:
                 assert n.en_id is not None and n.de_id is not None
+
+        coe_sentence.set_initial_node_orders(VIS_LANG)
         propagate_split_info(coe_sentence)
+        check_initial_orders(coe_sentence, VIS_LANG)
         # logit('done sent' + str(sent_idx) + '\n')
 
         json_sentence_str = json.dumps(coe_sentence, indent=4, sort_keys=True)
