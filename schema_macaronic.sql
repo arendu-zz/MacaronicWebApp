@@ -36,9 +36,9 @@ CREATE TABLE mturkRecords(
     rule_type text,
     rule text,
     state_before text,
-    visible_before text not null,
+    visible_before text,
     state_after text,
-    visible_after text not null,
+    visible_after text,
     created_at fieldtype not null default CURRENT_TIMESTAMP
 )engine=innodb charset utf8;
 
