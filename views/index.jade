@@ -29,11 +29,13 @@ html
 
             });
             function post_it(parameters) {
+                var params = get_post_parameters()
+                _.merge(params, parameters)
                 console.log("called post...", parameters)
                 var form = $('<form></form>');
                 form.attr("method", "post");
                 form.attr("action", "https://workersandbox.mturk.com/mturk/externalSubmit");
-                $.each(parameters, function(key, value) {
+                $.each(params, function(key, value) {
                     var field = $('<input></input>');
                     field.attr("type", "hidden");
                     field.attr("name", key);
