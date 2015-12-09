@@ -79,20 +79,21 @@ io.on('connection', function (socket) {
 		console.log('got completion from user!')
 		var sentences_completed = msg.sentences_completed
 		_.each(sentences_completed, function (s) {
-			new Model.UserCompletedSentences({'username': msg.username, 'hit_id': msg.hitId, 'sentence_id': s}).save().then(function (done) {
+			console.log(s.id, s.points_earned, s.points_bonus, msg.hitId)
+			new Model.UserCompletedSentences({'username': msg.username, 'assignment_id': msg.assignment_id, 'hit_id': msg.hitId, 'sentence_id': s.id, 'points_earned': parseInt(s.points_earned), 'points_bonus': parseInt(parseFloat(s.points_bonus))}).save().then(function (done) {
 				console.log('saved user completed sentence.')
 			});
 
-			Model.CompletedSentences.where('sentence_id', s).fetch().then(function (sentenceFetch) {
-				console.log("updating number of times" + s + " has been completed...")
+			Model.CompletedSentences.where('sentence_id', s.id).fetch().then(function (sentenceFetch) {
+				console.log("updating number of times" + s.id + " has been completed...")
 				console.log("fetched:" + sentenceFetch)
 				if (sentenceFetch == null) {
-					new Model.CompletedSentences({'sentence_id': s, 'times_completed': 1}).save().then(function (done) {
+					new Model.CompletedSentences({'sentence_id': s.id, 'times_completed': 1}).save().then(function (done) {
 						console.log('inserted new sentence completion record.')
 					})
 				} else {
 					console.log("here....")
-					new Model.CompletedSentences().where('sentence_id', s).save({'times_completed': parseInt(sentenceFetch.attributes.times_completed) + 1}, {method: 'update'}).then(function (done) {
+					new Model.CompletedSentences().where('sentence_id', s.id).save({'times_completed': parseInt(sentenceFetch.attributes.times_completed) + 1}, {method: 'update'}).then(function (done) {
 						console.log('updated sentence_id', done.times_completed)
 					})
 				}

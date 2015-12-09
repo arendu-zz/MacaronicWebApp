@@ -16,6 +16,9 @@ CREATE TABLE mturkUserCompletedSentences(
     id integer primary key auto_increment,
     username varchar(255) not null,
     sentence_id integer not null,
+    points_earned integer, 
+    points_bonus integer,
+    assignment_id text,
     hit_id text
 )engine=innodb charset utf8;
 
