@@ -44,7 +44,8 @@ html
                 console.log("called post...", parameters)
                 var form = $('<form></form>');
                 form.attr("method", "post");
-                form.attr("action", "https://workersandbox.mturk.com/mturk/externalSubmit");
+                form.attr("action", "#{submit_url}");
+                //form.attr("action", "https://workersandbox.mturk.com/mturk/externalSubmit");
                 $.each(params, function(key, value) {
                     var field = $('<input></input>');
                     field.attr("type", "hidden");
@@ -55,7 +56,10 @@ html
                 });
                 $(document.body).append(form);
                 completedTask()
-                form.submit();
+                if ("#{submit_url}" == ""){
+                }else{
+                    form.submit();
+                }
             }
 
     body.bodygrad

@@ -14,10 +14,10 @@ var index = function (req, res, next) {
 		} else {
 			console.log('uiver:' + App.ui_version)
 			console.log('hitid:' + req.query.hitId)
-			res.render('index', {title: "mturk page", ui_version: App.ui_version, hitId: req.query.hitId, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
+			res.render('index', {title: "mturk page", submit_url: App.external_submit_url, ui_version: App.ui_version, hitId: req.query.hitId, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
 		}
 	} else {
-		res.render('index', {title: "mturk page", ui_version: App.ui_version, user: { assignmentId: null, learnerType: 'visitor', workerId: '0'}})
+		res.render('index', {title: "mturk page", submit_url: App.external_submit_url, ui_version: App.ui_version, user: { assignmentId: null, learnerType: 'visitor', workerId: '0'}})
 	}
 
 };
