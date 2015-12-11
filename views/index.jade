@@ -57,7 +57,9 @@ html
                 $(document.body).append(form);
                 completedTask()
                 if ("#{submit_url}" == ""){
+                    console.log("not submitting to mturk")
                 }else{
+                    console.log("submit to :" + "#{submit_url}")
                     form.submit();
                 }
             }
