@@ -32,22 +32,25 @@ html {
 
 }
 
-ul {
+ul.hit {
     display: flex;
     justify-content: flex-start;
     flex-direction: row;
     align-items: center;
-    /* width: 100%; */
     padding: 0px;
+    width: 100%;
 }
 
-ul li {
+ul.hit li.hit {
     padding: 0px;
     margin: 5px;
     display: inline-block;
     list-style: none;
 }
+b {
+    color: red;
+}
 
-ul li:last-child {
+ul.hit li:last-child {
     margin-left: auto;
 }

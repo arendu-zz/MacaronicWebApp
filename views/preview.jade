@@ -28,7 +28,7 @@ html
                 if ("#{user.assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
                     console.log('assignmet disabled' + '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', true)
-                    $('#confirmInput').html('Accept HIT to view tasks')
+                    $('#confirmInput').html('Accept HIT to view tasks & Submit')
                 }else{
                     console.log('assignent enabled!!'+ '#{user.assignmentId}')
                     $('#confirmInput').prop('disabled', false)
@@ -54,23 +54,47 @@ html
             }
 
     body.bodygrad
-        #page.pageContainer
-            h2
-                |Instructions
-            p
-                | The sentence below is an example.
-            p
-                |The goal is to guess the translation of a foreign sentence.
-            p
-                |Clicking on words in the foreign sentence reveals clues, but at the cost of points(grey).
-                b You have a limited number of clues per sentence!
-            p
-                | Once you feel you have understood the meaning of the sentence click 'Attemp Translation'.
-                b You will not get more clues once you click it!
-            p
-                | Enter your translation guess in the text box below the foregin sentence. A good guess earns points(green).
-            p
-                | Collect as many points as possible to receive a bonus reward.
+        #page
+            h3 Instructions:
+            h4 Goal:
+            ul
+                li Guess the correct translation of a foreign sentence and get points for a translation.
+            h4 Clues:
+            ul
+                li  Clicking on the words of the foreign sentence reveals clues about the meaning of the sentence.
+                li  Each clue will cost you 1 point (grey color).
+                li
+                    b Note: You have a limited number of clues per sentence!
+            h4
+                | Attempt Translation:
+            ul
+                li Once you feel you have understood the meaning of the sentence click 'Attempt Translation'.
+                li A text box will now appear under the foreign sentence. Type in your guess for its translation in english.
+                li
+                    b Note: You will not be able to get any more clues when you attempt the translation!
+                li You will get points (0 - 5 points) for good translations (green)
+                li
+                    b Remember: the translations do not have to be perfect, you just have to make good quesses!
 
+            h4
+                | Example:
+            p
+                | Here is an example of the kind of sentences you will see when you accept the hit.
+                br
+                | Click around to get familiar with the game (the points in the example won't count)
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+
+            h4 Submit:
+            p
+                | You need at least 2 green points to submit the hit,
+                | upon submission points from remaining clues and translation will be added towords your total points earned.
+            h4
+                | Bonus:
+            p
+                | Try and accumilate as many points as possible, you can do this by:
+            ul
+                li  Using the fewest clues possible (you should try to remember what the foreign words mean)
+                li  Typing in best translations
+            p
+                | Bonuses will be issued to individuals who accumilate high points!
             button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})")
