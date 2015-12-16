@@ -83,6 +83,7 @@ html
                 br
                 | Click around to get familiar with the game (the points in the example won't count)
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+            button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})")
 
             h4 Submit:
             p
@@ -97,4 +98,4 @@ html
                 li  Typing in best translations
             p
                 | Bonuses will be issued to individuals who accumilate high points!
-            button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})")
+
