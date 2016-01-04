@@ -224,8 +224,10 @@ def get_output_phrase_as_spans(output_phrases):
 if __name__ == '__main__':
     opt = OptionParser()
 
-    opt.add_option('-i', dest='input_mt', default='../data/fr/newstest2013/newstest2013.input.tok.1')
-    opt.add_option('-o', dest='output_mt', default='../data/fr/newstest2013/newstest2013.output.1.wa')
+    #opt.add_option('-i', dest='input_mt', default='../data/fr/newstest2013/newstest2013.input.tok.1')
+    opt.add_option('-i', dest='input_mt', default='')
+    #opt.add_option('-o', dest='output_mt', default='../data/fr/newstest2013/newstest2013.output.1.wa')
+    opt.add_option('-o', dest='output_mt', default='')
     (options, _) = opt.parse_args()
     if options.input_mt == '' or options.output_mt == '':
         logit('Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT\n', 10)
