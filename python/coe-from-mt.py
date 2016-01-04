@@ -16,9 +16,6 @@ sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 
-# import pdb
-from pprint import pprint
-
 VIS_LANG = 'de'
 INPUT_LANG = 'de'
 USE_SPLIT = False
@@ -342,14 +339,15 @@ def make_edges_with_intermediate_nodes(from_nodes, to_nodes, intermediate, graph
     edges = []
     # import pdb
 
-    # if len(to_nodes) == 1 and len(from_nodes) > 1:
-    # pdb.set_trace()
+
+
     has_intermediate = False
-    for f, t in product(from_nodes, to_nodes):
-        int_tok = intermediate.get((f.s, t.s), None)
-        repeat = int_tok in [i.s for i in from_nodes]
-        has_intermediate = (int_tok is not None and int_tok != 'NULL' and f.s != t.s) or has_intermediate
-        has_intermediate = has_intermediate and (not repeat)
+    if (len(to_nodes) == 1 and len(from_nodes) == 1) or (len(to_nodes) > 1 and len(from_nodes) == 1):
+        for f, t in product(from_nodes, to_nodes):
+            int_tok = intermediate.get((f.s, t.s), None)
+            repeat = int_tok in [i.s for i in from_nodes]
+            has_intermediate = (int_tok is not None and int_tok != 'NULL' and f.s != t.s) or has_intermediate
+            has_intermediate = has_intermediate and (not repeat)
 
     if has_intermediate:
         for f, t in product(from_nodes, to_nodes):
@@ -525,7 +523,7 @@ if __name__ == '__main__':
     all_coe_sentences = []
     coe_sentences = []
     sentences_used = []
-    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:200]):
+    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[240:260]):
         if len(input_line.split()) < 3 or len(input_line.split()) > 20:
             # SKIP SHORT AND LONG SENTENCES
             continue

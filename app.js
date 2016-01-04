@@ -196,6 +196,10 @@ function nextHit(resData, content, clientId, io) {
 
 }
 
+function noMoreHits(resData, clientId, io) {
+	io.to(clientId).emit('noMoreHitsForUser', {progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
+}
+
 function sliceContent(fullcontent, userData, clientId, io) {
 	var username = userData.attributes.username
 	var sentences_completed = {}
@@ -234,7 +238,7 @@ function sliceContent(fullcontent, userData, clientId, io) {
 			var sum = 0
 			_.each(sentences_completed, function (v, k) {
 				v = parseInt(v)
-				//console.log('final', sentences_completed[k], k, v)
+				console.log('final', sentences_completed[k], k, v)
 				cumilative_completed[k] = [parseInt(sum), parseInt(sum) + parseInt(v)]
 				sum = parseInt(sum) + parseInt(v)
 			})
@@ -248,7 +252,12 @@ function sliceContent(fullcontent, userData, clientId, io) {
 				}
 			})
 			console.log('returning...', return_id)
-			nextHit(userData, [content_objs[return_id]], clientId, io)
+			if (return_id == null) {
+				console.log("worked has completed all sentences....")
+				noMoreHits(userData, clientId, io)
+			} else {
+				nextHit(userData, [content_objs[return_id]], clientId, io)
+			}
 
 		})
 
