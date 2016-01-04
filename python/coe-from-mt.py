@@ -42,11 +42,11 @@ def check_initial_orders(sent_obj, vis_lang):
 
     for v_n_tok, v_tok in zip(vis_node_toks, vis_toks):
         sys.stderr.write(v_n_tok + ' vs ' + v_tok + '\n')
-        assert v_n_tok == v_tok
+        #assert v_n_tok == v_tok TODO: is this assertion really needed?
     return True
 
 
-def logit(str, priority=0):
+def logit(str, priority=10):
     if priority > 5:
         sys.stderr.write(str)
 
@@ -523,8 +523,8 @@ if __name__ == '__main__':
     all_coe_sentences = []
     coe_sentences = []
     sentences_used = []
-    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[240:260]):
-        if len(input_line.split()) < 3 or len(input_line.split()) > 20:
+    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:100]):
+        if len(input_line.split()) < 0 or len(input_line.split()) > 200:
             # SKIP SHORT AND LONG SENTENCES
             continue
         logit('len all coe ' + str(len(all_coe_sentences)) + ' len coe ' + str(
@@ -745,6 +745,14 @@ if __name__ == '__main__':
         ['var json_str_arr = ' + str(preview_coe_sentences), 'module.exports.Preview = json_str_arr'])
     main_sentences = '\n'.join(sentences_used[:-1])
     preview_sentences = '\n'.join(sentences_used[-1:])
+    f = codecs.open(options.output_stem + '.state', 'w', 'utf8')
+    f.write('\n'.join(main_coe_sentences))
+    f.flush()
+    f.close()
+    f = codecs.open(options.output_stem + '.preview.state', 'w', 'utf8')
+    f.write('\n'.join(preview_coe_sentences))
+    f.flush()
+    f.close()
     f = codecs.open(options.output_stem + '.js', 'w', 'utf8')
     f.write(main_output)
     f.flush()
