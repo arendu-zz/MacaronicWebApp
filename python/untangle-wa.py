@@ -224,8 +224,8 @@ def get_output_phrase_as_spans(output_phrases):
 if __name__ == '__main__':
     opt = OptionParser()
 
-    opt.add_option('-i', dest='input_mt', default='')
-    opt.add_option('-o', dest='output_mt', default='')
+    opt.add_option('-i', dest='input_mt', default='../data/fr/newstest2013/newstest2013.input.tok.1')
+    opt.add_option('-o', dest='output_mt', default='../data/fr/newstest2013/newstest2013.output.1.wa')
     (options, _) = opt.parse_args()
     if options.input_mt == '' or options.output_mt == '':
         logit('Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT\n', 10)
@@ -266,12 +266,14 @@ if __name__ == '__main__':
             # print '\t phrases:', input_sent[inp_span[0]:inp_span[1] + 1], '-', output_sent[out_span[0]:out_span[1] + 1]
             # print '\t phrase spans:', inp_span, '-', out_span
             # print '\twa:', wa
+            # print '\t\tsofar:', untangle_wa_line
             wa_no_null = insert_epsilon_edge(wa, input_sent[inp_span[0]:inp_span[1] + 1],
                                              output_sent[out_span[0]:out_span[1] + 1])
             sym_coverage, sym_wa = make_symmetric(wa_no_null)
             assert sym_coverage == 0
             untangle = untangle_wa(sym_wa)
-            for k, v in sorted(untangle.iteritems()):
+            sorted_by_output_untangle = sorted(untangle.items(), key=operator.itemgetter(1))
+            for k, v in sorted_by_output_untangle:
                 untangle_inp_span = str(min(inp_span) + min(k)) + '-' + str(min(inp_span) + max(k))
                 untangle_out_span = (min(out_span) + min(v), min(out_span) + max(v))
                 new_out_phrase = ' '.join(output_sent[untangle_out_span[0]:untangle_out_span[1] + 1])
