@@ -24,7 +24,7 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup("#{user.username}", socket, parseInt("#{ui_version}"), false)
+                setup("#{user.username}", socket, parseInt("#{ui_version}"), false ,"#{sentence_prefered}")
 
                 if ("#{user.assignmentId}" === ""){
                     assignmentId = "ASSIGNMENTID_NOT_AVAILABLE"
@@ -58,7 +58,7 @@ html
                 completedTask()
                 if ("#{submit_url}" == ""){
                     console.log("not submitting to mturk")
-                    get_new_task()
+                    get_new_task("#{sentence_prefered}")
                 }else{
                     console.log("submit to :" + "#{submit_url}")
                     form.submit();

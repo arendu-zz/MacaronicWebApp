@@ -53,8 +53,8 @@ var story_num = parseInt(yargs.story)
 var JsonSentences = null
 var JsonSentencesPreview = null
 if (story_num == 0) {
-	JsonSentences = require('./stories/jsonsentences')
-	JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
+	JsonSentences = require('./stories/newstest2013.fr.js')
+	JsonSentencesPreview = require('./stories/newstest2013.fr.preview.js')
 } else if (story_num == 1) {
 	JsonSentences = require('./stories/le_petit_prince.fr')
 	JsonSentencesPreview = require('./stories/le_petit_prince.fr.preview')
@@ -123,6 +123,49 @@ io.on('connection', function (socket) {
 		var content = JsonSentencesPreview.Preview
 		io.to(clientId).emit('previewContent', {data: content});
 	});
+
+	socket.on('requestSentence', function (msg) {
+		console.log('received user progress request...')
+		if (msg.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
+			Model.User.where('username', msg.username).fetch().then(function (resData) {
+				if (resData != null) {
+					console.log("no assignment but found user, with progress ", resData.attributes.progress);
+					console.log(JsonSentences.Story1.length)
+					//sliceContent(JsonSentences.Story1, resData, clientId, io)
+					specificContent(JsonSentences.Story1, resData, msg.sentence_prefered, clientId, io)
+					//io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
+				} else {
+					console.log("no assignment no user")
+					//sliceContent(JsonSentences.Story1, resData, clientId, io)
+					specificContent(JsonSentences.Story1, resData, msg.sentence_prefered, clientId, io)
+					//io.to(clientId).emit('userProgress', { data: content, progress: 0, points_earned: 0})
+				}
+			})
+			// a visitor or a mturk previewer
+
+		} else {
+			console.log("mturk user with assignment .." + msg.username)
+			//a real mturk user
+			Model.User.where('username', msg.username).fetch().then(function (resData) {
+				if (resData != null) {
+					console.log("found username:" + msg.username + " returning user progress" + resData.attributes.progress)
+					//sliceContent(JsonSentences.Story1, resData, clientId, io)
+					specificContent(JsonSentences.Story1, resData, msg.sentence_prefered, clientId, io)
+
+				} else {
+					//insert new user in database
+					new Model.User({username: msg.username, progress: 0, points_earned: 0}).save().then(function (data) {
+						console.log("created new mturk user..." + data.attributes.id)
+						//sliceContent(JsonSentences.Story1, data, clientId, io)
+						specificContent(JsonSentences.Story1, data, msg.sentence_prefered, clientId, io)
+						//io.to(clientId).emit('userProgress', {data: content, progress: data.attributes.progress, points_earned: data.attributes.points_earned})
+
+					})
+				}
+			})
+		}
+
+	})
 
 	socket.on('requestUserProgress', function (msg) {
 		console.log('received user progress request...')
@@ -198,6 +241,16 @@ function nextHit(resData, content, clientId, io) {
 
 function noMoreHits(resData, clientId, io) {
 	io.to(clientId).emit('noMoreHitsForUser', {progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
+}
+
+function specificContent(fullcontent, userData, sentence_id, clientId, io) {
+	var content_objs = {}
+	_.each(fullcontent, function (s) {
+		var s_obj = JSON.parse(s);
+		content_objs[s_obj.id] = s
+		console.log(sentence_id, s_obj.id)
+	})
+	nextHit(userData, [content_objs[sentence_id]], clientId, io)
 }
 
 function sliceContent(fullcontent, userData, clientId, io) {

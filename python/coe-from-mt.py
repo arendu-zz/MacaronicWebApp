@@ -42,7 +42,7 @@ def check_initial_orders(sent_obj, vis_lang):
 
     for v_n_tok, v_tok in zip(vis_node_toks, vis_toks):
         sys.stderr.write(v_n_tok + ' vs ' + v_tok + '\n')
-        #assert v_n_tok == v_tok TODO: is this assertion really needed?
+        # assert v_n_tok == v_tok TODO: is this assertion really needed?
     return True
 
 
@@ -524,7 +524,7 @@ if __name__ == '__main__':
     coe_sentences = []
     sentences_used = []
     for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:100]):
-        if len(input_line.split()) < 0 or len(input_line.split()) > 200:
+        if len(input_line.split()) < 0 or len(input_line.split()) > 100:
             # SKIP SHORT AND LONG SENTENCES
             continue
         logit('len all coe ' + str(len(all_coe_sentences)) + ' len coe ' + str(
@@ -542,7 +542,7 @@ if __name__ == '__main__':
 
         logit('SENT' + str(sent_idx) + '\n')
         input_sent = input_line.strip().split()
-        sentences_used.append(input_line.strip())
+        sentences_used.append(str(sent_idx) + "\t" + input_line.strip())
         output_items = output_line.strip().split('|')
         output_phrases = [oi.strip() for idx, oi in enumerate(output_items) if idx % 2 == 0 and oi.strip() != '']
         output_sent = ' '.join(output_phrases).split()

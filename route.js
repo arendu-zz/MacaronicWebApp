@@ -8,13 +8,20 @@ var App = require('./app')
 
 // index
 var index = function (req, res, next) {
+	if (req.query.hasOwnProperty('sentenceId')) {
+		console.log("has sentence id" + req.query.sentenceId)
+	} else {
+		console.log("no sentence Id in req.........")
+	}
+
 	if (req.query.hasOwnProperty('assignmentId')) {
 		if (req.query.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
 			res.render('preview', {title: "mturk page", ui_version: App.ui_version, user: { assignmentId: req.query.assignmentId, learnerType: 'previewer', username: req.query.workerId}})
 		} else {
 			console.log('uiver:' + App.ui_version)
 			console.log('hitid:' + req.query.hitId)
-			res.render('index', {title: "mturk page", submit_url: App.external_submit_url, ui_version: App.ui_version, hitId: req.query.hitId, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
+			console.log('sentenceId:' + req.query.sentenceId)
+			res.render('index', {sentence_prefered: req.query.sentenceId, title: "mturk page", submit_url: App.external_submit_url, ui_version: App.ui_version, hitId: req.query.hitId, user: {  assignmentId: req.query.assignmentId, learnerType: 'learner', username: req.query.workerId}})
 		}
 	} else {
 		res.render('index', {title: "mturk page", submit_url: App.external_submit_url, ui_version: App.ui_version, user: { assignmentId: null, learnerType: 'visitor', workerId: '0'}})
