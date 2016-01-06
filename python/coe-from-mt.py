@@ -523,8 +523,8 @@ if __name__ == '__main__':
     all_coe_sentences = []
     coe_sentences = []
     sentences_used = []
-    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:100]):
-        if len(input_line.split()) < 0 or len(input_line.split()) > 100:
+    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:217]):
+        if len(input_line.split()) < 2 or len(input_line.split()) > 25:
             # SKIP SHORT AND LONG SENTENCES
             continue
         logit('len all coe ' + str(len(all_coe_sentences)) + ' len coe ' + str(

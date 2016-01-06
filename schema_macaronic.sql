@@ -8,7 +8,8 @@ CREATE TABLE mturkUsers(
     id integer primary key auto_increment,
     username varchar(255) unique,
     progress integer not null default 0,
-    points_earned float not null default 0
+    points_earned float not null default 0,
+    low_scores integer not null default 0
 )engine=innodb charset utf8;
 
 DROP TABLE IF EXISTS mturkUserCompletedSentences;

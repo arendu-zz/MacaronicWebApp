@@ -38,6 +38,10 @@ html
                 }
 
             });
+
+            function toggle_instructions(){
+                    $('.instructions').toggle();
+            }
             function post_it(parameters) {
                 var params = get_post_parameters()
                 _.extend(params, parameters)
@@ -63,6 +67,7 @@ html
                     console.log("submit to :" + "#{submit_url}")
                     form.submit();
                 }
+                updateMessageBox('Get Clues by clicking on the words of the sentence below.')
             }
 
     body.bodygrad
@@ -74,5 +79,11 @@ html
                     br
                     | Points:
                     span#pointsEarned.bold
+            span#Instruction.instructions(onclick="toggle_instructions()") Instructions:
+            br
+            span#messageBox.instructions(onclick="toggle_instructions()")  Get Clues by clicking on the words of the sentence below.
+            br
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+            br
             button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})") Submit
+

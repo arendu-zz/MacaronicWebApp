@@ -109,7 +109,7 @@ io.on('connection', function (socket) {
 				}
 			})
 		})
-		new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress}, {method: 'update'}).then(function (data) {
+		new Model.User().where({username: msg.username}).save({ points_earned: msg.points_earned, progress: msg.progress, low_scores: msg.low_scores}, {method: 'update'}).then(function (data) {
 			Model.User.where('username', msg.username).fetch().then(function (resData) {
 				//console.log('sending new content...')
 				//sliceContent(JsonSentences.Story1, resData, clientId, io)
@@ -234,8 +234,13 @@ function escapeHTML(unsafe_str) {
 }
 
 function nextHit(resData, content, clientId, io) {
-	console.log("show next set of hit questions, ", max_hits, resData.attributes.progress, resData.attributes.username)
-	io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
+	if (resData.attributes.low_scores){
+
+	}else{
+		resData.attributes.low_scores = 0
+	}
+	console.log("show next set of hit questions, ", max_hits, resData.attributes.progress, resData.attributes.username, resData.attributes.low_scores)
+	io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned, low_scores: resData.attributes.low_scores})
 
 }
 
@@ -291,7 +296,7 @@ function sliceContent(fullcontent, userData, clientId, io) {
 			var sum = 0
 			_.each(sentences_completed, function (v, k) {
 				v = parseInt(v)
-				console.log('final', sentences_completed[k], k, v)
+				//console.log('final', sentences_completed[k], k, v)
 				cumilative_completed[k] = [parseInt(sum), parseInt(sum) + parseInt(v)]
 				sum = parseInt(sum) + parseInt(v)
 			})

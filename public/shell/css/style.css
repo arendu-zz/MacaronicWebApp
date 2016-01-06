@@ -54,3 +54,8 @@ b {
 ul.hit li:last-child {
     margin-left: auto;
 }
+
+.instructions {
+    font-size: small;
+    color: gray;
+}
