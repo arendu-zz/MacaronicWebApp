@@ -42,7 +42,7 @@ def check_initial_orders(sent_obj, vis_lang):
 
     for v_n_tok, v_tok in zip(vis_node_toks, vis_toks):
         sys.stderr.write(v_n_tok + ' vs ' + v_tok + '\n')
-        # assert v_n_tok == v_tok TODO: is this assertion really needed?
+        assert v_n_tok == v_tok 
     return True
 
 
