@@ -112,7 +112,7 @@ def mark_swaps_transfers_interrupts(input_tok_group, output_tok_group):
             # o2 = [ix for ix in input_tok_group if ix in involved_graphs]
             o1 = [ix for ix in input_tok_group if ix in involved_graphs]
             o2 = [ix for ix in output_tok_group if ix in involved_graphs]
-            # assert len(o1) != len(o2)  #todo: must address this exception
+            #assert len(o1) != len(o2)  #todo: must address this exception
             if len(o1) > len(o2):
                 split_orderings[i] = {'split_ordering': o1, 'unsplit_ordering': o2}
             else:
@@ -523,7 +523,7 @@ if __name__ == '__main__':
     all_coe_sentences = []
     coe_sentences = []
     sentences_used = []
-    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:217]):
+    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:200]):
         if len(input_line.split()) < 2 or len(input_line.split()) > 25:
             # SKIP SHORT AND LONG SENTENCES
             continue

@@ -11,7 +11,7 @@ REORDER_SWAP_TYPE = 'swap reorder'
 REORDER_TRANSFER = 'transfer reorder'
 REORDER_SEPARATES = 'separation reorder'
 
-ed = EditDistance(None)
+#ed = EditDistance(None)
 
 
 class Edge(dict):
