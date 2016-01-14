@@ -65,8 +65,8 @@ if (story_num == 0) {
 	JsonSentences = require('./stories/nachrichtenleicht.de')
 	JsonSentencesPreview = require('./stories/nachrichtenleicht.de.preview')
 } else {
-	JsonSentences = require('./stories/jsonsentences')
-	JsonSentencesPreview = require('./stories/jsonsentences-preview.js')
+	JsonSentences = require('./stories/newstest2013.fr.js')
+	JsonSentencesPreview = require('./stories/newstest2013.fr.preview.js')
 }
 
 var sentences_per_page = 5
@@ -310,7 +310,7 @@ function sliceContent(fullcontent, userData, clientId, io) {
 				}
 			})
 			console.log('returning...', return_id)
-			if (return_id == null) {
+			if (return_id == null || return_id > 215) {
 				console.log("worked has completed all sentences....")
 				noMoreHits(userData, clientId, io)
 			} else {
