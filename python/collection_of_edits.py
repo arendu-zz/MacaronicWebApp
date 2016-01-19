@@ -11,7 +11,7 @@ REORDER_SWAP_TYPE = 'swap reorder'
 REORDER_TRANSFER = 'transfer reorder'
 REORDER_SEPARATES = 'separation reorder'
 
-#ed = EditDistance(None)
+# ed = EditDistance(None)
 
 
 class Edge(dict):
@@ -46,7 +46,7 @@ class Node(dict):
         self.lang = lang
         self.visible = visible
         self.visible_order = None
-
+        self.frequency = None
         self.graph = None
         self.er_lang = "en"
         self.to_en = to_en
@@ -68,7 +68,7 @@ class Node(dict):
         """ Recursively (re)construct TreeNode-based tree from dictionary. """
         n = Node(dict_['id'], dict_['s'], dict_['en_id'], dict_['de_id'], dict_['lang'], dict_['visible'],
                  dict_['to_en'],
-                 dict_['to_de'], dict_['ir'])
+                 dict_['to_de'], dict_['ir'], dict_['frequency'])
         return n
 
 

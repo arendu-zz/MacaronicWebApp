@@ -42,7 +42,7 @@ def check_initial_orders(sent_obj, vis_lang):
 
     for v_n_tok, v_tok in zip(vis_node_toks, vis_toks):
         sys.stderr.write(v_n_tok + ' vs ' + v_tok + '\n')
-        assert v_n_tok == v_tok 
+        assert v_n_tok == v_tok
     return True
 
 
@@ -112,7 +112,7 @@ def mark_swaps_transfers_interrupts(input_tok_group, output_tok_group):
             # o2 = [ix for ix in input_tok_group if ix in involved_graphs]
             o1 = [ix for ix in input_tok_group if ix in involved_graphs]
             o2 = [ix for ix in output_tok_group if ix in involved_graphs]
-            #assert len(o1) != len(o2)  #todo: must address this exception
+            # assert len(o1) != len(o2)  #todo: must address this exception
             if len(o1) > len(o2):
                 split_orderings[i] = {'split_ordering': o1, 'unsplit_ordering': o2}
             else:
@@ -483,6 +483,17 @@ def get_dep_parse(path):
     return dep_parses
 
 
+def compute_vocab_histogram(sentence_list):
+    hist = {}
+    for line in sentence_list:
+        for word in line.split():
+            c = hist.get(word.lower(), 0.0) + 1.0
+            hist[word.lower()] = c
+    m = max(hist.values())
+    hist = dict((k, v / m) for k, v in hist.iteritems())
+    return hist
+
+
 if __name__ == '__main__':
     opt = OptionParser()
 
@@ -512,6 +523,7 @@ if __name__ == '__main__':
     is_demo = int(options.is_demo) == 1
     input_parsed = get_dep_parse(options.input_parse)
     input_mt = codecs.open(options.input_mt, 'r', 'utf-8').readlines()
+    input_histogram = compute_vocab_histogram(input_mt)
     output_mt = codecs.open(options.output_mt, 'r', 'utf-8').readlines()
     intermediate_nodes = {}
     for l in codecs.open(options.intermediate, 'r', 'utf-8').readlines():
@@ -599,6 +611,7 @@ if __name__ == '__main__':
                     input_tok_group[inp_span[0] + iu_idx] = group_idx
                     n = Node(node_idx, input_sent[inp_span[0] + iu_idx], None, inp_span[0] + iu_idx, DE_LANG,
                              VIS_LANG == DE_LANG, True, False, False)
+                    n.frequency = input_histogram[n.s.lower()]
                     node_idx += 1
                     to_nodes.append(n)
 
