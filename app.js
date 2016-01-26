@@ -13,7 +13,7 @@ var _ = require('underscore');
 // custom libraries
 var route = require('./route')
 var Model = require('./model');
-var yargs = require('yargs').usage('Usage: $0 --uiver [0,1] --host [ec2, ec2-live,localhost] --story [0...4]').demand(['uiver', 'host', 'story']).argv;
+var yargs = require('yargs').usage('Usage: $0 --uiver [0,1] --host [ec2, ec2sandbox,localhost] --story [0...4]').demand(['uiver', 'host', 'story']).argv;
 exports.ui_version = parseInt(yargs.uiver)
 
 // setup app
@@ -40,9 +40,9 @@ if (yargs.host == 'ec2') {
 	https = require('http').createServer(app);
 }
 
-if (yargs.host == 'ec2') {
+if (yargs.host == 'ec2sandbox') {
 	exports.external_submit_url = "https://workersandbox.mturk.com/mturk/externalSubmit"
-} else if (yargs.host == 'ec2-live') {
+} else if (yargs.host == 'ec2') {
 	exports.external_submit_url = "https://www.mturk.com/mturk/externalSubmit"
 } else {
 	exports.external_submit_url = ""
