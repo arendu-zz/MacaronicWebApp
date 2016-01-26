@@ -22,6 +22,7 @@ html
         script(type='text/javascript', src='/MacaronicParseUI/js/word-options.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/regex_tokenizer.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/PorterStemmer1980.min.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/')
         script.
             $(document).ready(function () {
                 var socket = io();
@@ -39,6 +40,19 @@ html
                 }
 
             });
+
+            document.addEventListener("visibilitychange", function() {
+                if (document.hidden) {
+                    console.log("not visible!!!")
+                } else {
+                    console.log("visible!!!")
+                    updateMessageBox('<b>You are not allowed to visit other pages/tabs while working on this HIT!</b>')
+                    if (socket){
+                        socket.emit('userTabbed', {username: #{user.username}, ui_version: ui_version, sentence_id: sentence_ids[0], assignmentId: assignmentId, hitId: hitId})
+                    }
+                }
+            });
+
 
             function toggle_instructions(){
                     $('.instructions').toggle();

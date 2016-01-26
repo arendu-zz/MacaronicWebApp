@@ -129,6 +129,12 @@ io.on('connection', function (socket) {
 		io.to(clientId).emit('previewContent', {data: content});
 	});
 
+	socket.on('userTabbed', function (msg) {
+		new Model.Guesses({username: msg.username, ui_version: parseInt(-1), sentence_id: parseInt(msg.sentence_id), show_reordering: false, reveal_instantly: false, sentence_state: "tabbed out", guesses_state: "tabbed out", sentence_visible: "tabbed out"}).save().then(function (data) {
+			console.log("new tabbed added:" + data.attributes.id)
+		})
+	})
+
 	socket.on('requestSentence', function (msg) {
 		console.log('received user progress request...')
 		if (msg.assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
