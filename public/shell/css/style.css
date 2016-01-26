@@ -65,3 +65,8 @@ ul.hit li:last-child {
     display: block;
     height: 60px;
 }
+
+img{
+    border: 2px solid gray;
+    box-shadow: gray;
+}
