@@ -25,16 +25,19 @@ html
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup("GUEST", socket, parseInt("#{ui_version}"), true)
-                if ("#{user.assignmentId}" == "ASSIGNMENT_ID_NOT_AVAILABLE"){
-                    console.log('assignmet disabled' + '#{user.assignmentId}')
-                    $('#confirmInput').prop('disabled', true)
-                    $('#confirmInput').html('Accept HIT to view tasks & Submit')
+                setup("#{user.username}", socket, parseInt("#{ui_version}"), false ,"#{sentence_prefered}")
+
+                if ("#{user.assignmentId}" === ""){
+                    assignmentId = "ASSIGNMENTID_NOT_AVAILABLE"
                 }else{
-                    console.log('assignent enabled!!'+ '#{user.assignmentId}')
-                    $('#confirmInput').prop('disabled', false)
-                    $('#confirmInput').html('submit')
+                    assignmentId = "#{user.assignmentId}"
                 }
+                if ("#{hitId}" === ""){
+                    hitId = "HIT_ID_NOT_AVAILABLE"
+                }else{
+                    hitId = "#{hitId}"
+                }
+
             });
             function post_it(parameters) {
                 console.log("called post...", parameters)
@@ -72,22 +75,29 @@ html
             ul
                 li At the end, click
                     b 'Calculate Score'
-                li For each correct guess (before it was revealed) you will earn one point.
-                li Points will be accumilated from each hit.
+                li For each correct guess (green shaded box) you will earn one point.
+                li Points will be accumulated from each hit.
+
+
+            h4 Example:
+            #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+
 
             h4
                 | Bonus:
             p
-                | Try and accumilate as many points as possible, you can do this by:
+                | Try and accumulate as many points as possible, you can do this by:
             ul
                 li  Making good guesses with out using too many clues.
             p
-                b Bonuses will be issued to individuals who accumilate high points!
+                b Bonuses will be issued to individuals who accumulate high points!
 
             h4 Review:
             ul
                 li All submissions will be accepted within 5 days.
                 li HITs which earn 0 points will be checked in detail before accepted.
                 li Too many HITs with 0 points might result in a rejection of the HIT.
+
+
 
 
