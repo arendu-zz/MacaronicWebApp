@@ -25,10 +25,16 @@ var UserCompletedSentences = DB.Model.extend({
 	idAttribute: 'id',
 })
 
+var Guesses = DB.Model.extend({
+	tableName: 'mturkGuesses',
+	idAttribute: 'id',
+})
+
 module.exports = {
     User: User,
     Records: Records,
     Translations: Translations,
     CompletedSentences: CompletedSentences,
-	UserCompletedSentences: UserCompletedSentences
+	UserCompletedSentences: UserCompletedSentences,
+	Guesses : Guesses
 };

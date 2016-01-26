@@ -85,6 +85,11 @@ io.on('connection', function (socket) {
 			console.log("new translation added:" + data.attributes.id)
 		})
 	})
+	socket.on('logGuesses', function (msg) {
+		new Model.Guesses({username: msg.username, ui_version: parseInt(msg.ui_version), sentence_id: parseInt(msg.sentence_id), show_reordering: msg.show_reordering, reveal_instantly: msg.reveal_instantly, sentence_state: msg.sentence_state, guesses_state: msg.guesses_state, sentence_visible: msg.sentence_visible}).save().then(function (data) {
+			console.log("new guesses added:" + data.attributes.id)
+		})
+	})
 	socket.on('completedTask', function (msg) {
 		console.log('got completion from user!')
 		var sentences_completed = msg.sentences_completed
@@ -234,9 +239,9 @@ function escapeHTML(unsafe_str) {
 }
 
 function nextHit(resData, content, clientId, io) {
-	if (resData.attributes.low_scores){
+	if (resData.attributes.low_scores) {
 
-	}else{
+	} else {
 		resData.attributes.low_scores = 0
 	}
 	console.log("show next set of hit questions, ", max_hits, resData.attributes.progress, resData.attributes.username, resData.attributes.low_scores)

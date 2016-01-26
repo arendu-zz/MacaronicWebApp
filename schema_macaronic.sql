@@ -17,7 +17,7 @@ CREATE TABLE mturkUserCompletedSentences(
     id integer primary key auto_increment,
     username varchar(255) not null,
     sentence_id integer not null,
-    points_earned integer, 
+    points_earned integer,
     points_bonus integer,
     assignment_id text,
     hit_id text
@@ -30,6 +30,19 @@ CREATE TABLE mturkCompletedSentences(
     times_completed integer not null default 0
 )engine=innodb charset utf8;
 
+DROP  TABLE IF EXISTS  mturkGuesses;
+CREATE TABLE mturkGuesses(
+  id integer primary key auto_increment ,
+  sentence_id integer not null,
+  username varchar(255) not null,
+  ui_version int not null,
+  reveal_instantly boolean not null,
+  show_reordering boolean not null,
+  guesses_state text not null,
+  sentence_state text not null,
+  sentence_visible text,
+  created_at fieldtype not null default CURRENT_TIMESTAMP
+)engine=innodb charset utf8;
 
 DROP TABLE IF EXISTS mturkRecords;
 CREATE TABLE mturkRecords(

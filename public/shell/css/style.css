@@ -47,6 +47,7 @@ ul.hit li.hit {
     display: inline-block;
     list-style: none;
 }
+
 b {
     color: red;
 }
@@ -56,6 +57,11 @@ ul.hit li:last-child {
 }
 
 .instructions {
-    font-size: small;
+    font-size: large;
     color: gray;
+}
+
+#messageBox {
+    display: block;
+    height: 60px;
 }

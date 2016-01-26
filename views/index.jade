@@ -68,7 +68,7 @@ html
                     console.log("submit to :" + "#{submit_url}")
                     form.submit();
                 }
-                updateMessageBox('Get Clues by clicking on the words of the sentence below.')
+                updateMessageBox('For each foreign word, guess its meaning in the text box below it')
             }
 
     body.bodygrad
@@ -82,7 +82,7 @@ html
                     span#pointsEarned.bold
             span#Instruction.instructions(onclick="toggle_instructions()") Instructions:
             br
-            span#messageBox.instructions(onclick="toggle_instructions()")  Get Clues by clicking on the words of the sentence below.
+            span#messageBox.instructions(onclick="toggle_instructions()")
             br
             #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
             br
