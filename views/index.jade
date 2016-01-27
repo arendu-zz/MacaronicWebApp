@@ -47,9 +47,7 @@ html
                 } else {
                     console.log("visible!!!")
                     updateMessageBox('<b>You are not allowed to visit other pages/tabs while working on this HIT!</b>')
-                    if (socket){
-                        socket.emit('userTabbed', {username: #{user.username}, ui_version: ui_version, sentence_id: sentence_ids[0], assignmentId: assignmentId, hitId: hitId})
-                    }
+                    emitUserTabOut()
                 }
             });
 
