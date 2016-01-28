@@ -51,10 +51,14 @@ if (yargs.host == 'ec2sandbox') {
 var io = require('socket.io')(https);
 var story_num = parseInt(yargs.story)
 var JsonSentences = null
+var FullParsedSentences = null
+var PreviewParsedSentence = null
+
 var JsonSentencesPreview = null
 if (story_num == 0) {
 	JsonSentences = require('./stories/newstest2013.fr.js')
 	JsonSentencesPreview = require('./stories/newstest2013.fr.preview.js')
+
 } else if (story_num == 1) {
 	JsonSentences = require('./stories/le_petit_prince.fr')
 	JsonSentencesPreview = require('./stories/le_petit_prince.fr.preview')
@@ -68,6 +72,9 @@ if (story_num == 0) {
 	JsonSentences = require('./stories/newstest2013.fr.js')
 	JsonSentencesPreview = require('./stories/newstest2013.fr.preview.js')
 }
+
+FullParsedSentences = parseAllContent(JsonSentences.Story1)
+PreviewParsedSentence = parseAllContent(JsonSentencesPreview.Story1)
 
 var sentences_per_page = 5
 
@@ -185,11 +192,11 @@ io.on('connection', function (socket) {
 				if (resData != null) {
 					console.log("no assignment but found user, with progress ", resData.attributes.progress);
 					console.log(JsonSentences.Story1.length)
-					sliceContent(JsonSentences.Story1, resData, clientId, io)
+					getLeastViewedContentForUser(resData, clientId, io)
 					//io.to(clientId).emit('userProgress', {data: content, progress: resData.attributes.progress, points_earned: resData.attributes.points_earned})
 				} else {
 					console.log("no assignment no user")
-					sliceContent(JsonSentences.Story1, resData, clientId, io)
+					getLeastViewedContentForUser(resData, clientId, io)
 					//io.to(clientId).emit('userProgress', { data: content, progress: 0, points_earned: 0})
 				}
 			})
@@ -201,13 +208,13 @@ io.on('connection', function (socket) {
 			Model.User.where('username', msg.username).fetch().then(function (resData) {
 				if (resData != null) {
 					console.log("found username:" + msg.username + " returning user progress" + resData.attributes.progress)
-					sliceContent(JsonSentences.Story1, resData, clientId, io)
+					getLeastViewedContentForUser(resData, clientId, io)
 
 				} else {
 					//insert new user in database
 					new Model.User({username: msg.username, progress: 0, points_earned: 0}).save().then(function (data) {
 						console.log("created new mturk user..." + data.attributes.id)
-						sliceContent(JsonSentences.Story1, data, clientId, io)
+						getLeastViewedContentForUser(data, clientId, io)
 						//io.to(clientId).emit('userProgress', {data: content, progress: data.attributes.progress, points_earned: data.attributes.points_earned})
 
 					})
@@ -269,7 +276,84 @@ function specificContent(fullcontent, userData, sentence_id, clientId, io) {
 	nextHit(userData, [content_objs[sentence_id]], clientId, io)
 }
 
-function sliceContent(fullcontent, userData, clientId, io) {
+function parseAllContent(fullcontent) {
+	var content_objs = {}
+
+	_.each(fullcontent, function (s) {
+		var s_obj = JSON.parse(s);
+		content_objs[s_obj.id] = s
+	})
+	return content_objs
+}
+
+function getLeastViewedContentForUser(userData, clientId, io) {
+	var username = userData.attributes.username
+	var sentences_completed = {}
+	var user_completed = []
+	var user_not_completed = []
+
+	_.each(FullParsedSentences, function (s, s_id) {
+		sentences_completed[s_id] = {sentence_id: s_id, times_completed: 0}
+	})
+	//console.log("full list of sentences")
+	//console.log(sentences_completed)
+
+	Model.UserCompletedSentences.where('username', username).fetchAll().then(function (rd) {
+		if (rd != null) {
+			_.each(rd.models, function (model) {
+				user_completed.push(parseInt(model.attributes.sentence_id))
+			})
+		} else {
+			console.log("no result found for user", username)
+		}
+
+		//console.log("user completed sentences")
+		//console.log(user_completed)
+
+		new Model.CompletedSentences().fetchAll().then(function (rd) {
+			if (rd != null) {
+				_.each(rd.models, function (model) {
+					sentences_completed[parseInt(model.attributes.sentence_id)] = {sentence_id: parseInt(model.attributes.sentence_id), times_completed: parseInt(model.attributes.times_completed)}
+				})
+			} else {
+				console.log("no sentences completed by anyone...")
+			}
+			//console.log("full list of sentences times completed")
+			//console.log(sentences_completed)
+
+			_.each(sentences_completed, function (obj, s_id) {
+				if (user_completed.indexOf(parseInt(s_id)) >= 0) {
+					//user has already completed this sentence
+				} else {
+					user_not_completed.push(obj)
+				}
+
+			})
+
+			//console.log("remaining sentences for user")
+			//console.log(user_not_completed)
+			var sorted_user_not_completed = _.sortBy(user_not_completed, function (o) {
+				return o.times_completed
+			})
+			var least_user_not_completed = _.filter(sorted_user_not_completed, function (o) {
+				return o.times_completed == sorted_user_not_completed[0].times_completed
+			})
+			if (least_user_not_completed.length > 0) {
+				var return_id = least_user_not_completed[Math.floor(Math.random() * least_user_not_completed.length)].sentence_id;
+				console.log("sentence:", return_id, " is being sent for user:", username)
+				nextHit(userData, [FullParsedSentences[return_id]], clientId, io)
+			} else {
+				console.log("no data left for user:", username)
+				noMoreHits(userData, clientId, io)
+			}
+
+		})
+
+	})
+
+}
+
+function sliceContent_tmp(fullcontent, userData, clientId, io) {
 	var username = userData.attributes.username
 	var sentences_completed = {}
 	var content_objs = {}
