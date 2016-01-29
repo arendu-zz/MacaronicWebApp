@@ -46,8 +46,12 @@ html
                     console.log("not visible!!!")
                 } else {
                     console.log("visible!!!")
-                    updateMessageBox('<b>You are not allowed to visit other pages/tabs while working on this HIT!</b>', true)
-                    emitUserTabOut()
+                    if ($('#confirmInput').prop("disabled") == true){
+                        updateMessageBox('<b>Please do not visit other pages/tabs while making guesses.</b>', true)
+                        emitUserTabOut()
+                    }
+
+
                 }
             });
 
