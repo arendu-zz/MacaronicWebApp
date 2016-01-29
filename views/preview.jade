@@ -61,51 +61,58 @@ html
     body.bodygrad
         #page
             h3 Instructions:
+            h4 Please read carefully.
             ul
                 li Guess the correct translation of each foreign word in a sentence and get points for a translation.
                 li After making intial guesses click
                     b  'Submit Guess'
                 li Correct guesses will be shaded green and will earn points. (value of each guess is shown below each text box)
-                li If you are not able to make correct guesses, click on
+                li There are no limits on number of guesses!
+                li If you are not able to make correct guesses after few tries, click on
                     b  'Get Random Clue'
+                li This will change a part of the foreign sentence into English, either:
+                    ul
+                        li One (or more) of the foreign will be shown in English (in blue text)
+                        li Or some words in the foreign sentence will be reordered (light blue shading)
                 li
                     b Note:
-                    |  Each time to get a random clue the value of each guess will reduce!
-                li
-                    ul
-                        li One (or more) of the foreign will be shown in english (in blue text)
-                        li Or some words in the foreign sentence will be reordered (light blue shading)
+                    | Each time to get a random clue the value of each guess will reduce!
                 li Now you can re-evaluate your guesses and try again.
                 li Repeat this process untill you have guess all words correctly or till the entire sentence is revealed.
-                li
-                    b Effort Points
-                    |  are awarded at random, even if your guess is incorrect. (up to 10 points)
 
-            h4 Bonus
+            h4 Example:
+                br
+                | An example HIT is shown below.
+                #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+                button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})") Accept HIT to Proceed
+                br
+
+            h4 Reward & Bonus
             ul
-                li  To qualify for the bonus, you must completed at least 25 HITs.
-                li
-                    b Bonuses will be issued primarily based on points earned and quality of guesses (i.e. not random/nonsense words)
+                li  Reward for each HIT is $0.20
+                li  Bonus of $1 is awarded for completing 25 HITs
+                li  Bonus of $2 is awarded for completing 50 HITs
+                li  If you complete more than 25 HITs you
+                    b  qualify
+                    |  for a
+                    b  $10 Bonus.
+                li  The $10 bonus will be awarded to the individual with the best average points per HIT.
                 li
                     b Helpful tips:
                     ul
                      li Fewer clues will ensure that you get more points for every correct guess.
                      li Make a few initial guesses to get maximum points, at least for the easy words.
                      li Harder words will earn more points, so do not give up on them!!
+                     li try and remember foreign words! They are likely to appear again.
+                     li You can hover over a clue (blue english word) to see its corresponding foreign.
 
-            h4 Example:
-            ul
-                li Below is a live example of the type of content you will see. Try guessing below!
-            #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
-            button#confirmInput(type='button',  onclick="post_it({ 'foo': 'bar', 'assignmentId': '#{user.assignmentId}'})") Accept HIT to Proceed
-            br
+
             h4 Review & Rules:
             ul
                 li All submissions will be accepted within 5 days.
                 li Please type in full english words or very short phrases (2 words).
                 li
                     b Please do not type nonsense words!!
-                li If you don't have a reasonable guess you can leave them blank and get more clues.
                 li Do not look up words in a dictionary or another web site.
 
 
