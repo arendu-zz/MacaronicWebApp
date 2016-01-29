@@ -13,7 +13,7 @@ var _ = require('underscore');
 // custom libraries
 var route = require('./route')
 var Model = require('./model');
-var yargs = require('yargs').usage('Usage: $0 --uiver [0,1] --host [ec2, ec2sandbox,localhost] --story [0...4]').demand(['uiver', 'host', 'story']).argv;
+var yargs = require('yargs').usage('Usage: $0 --uiver [0,1] --host [ec2, ec2sandbox,localhost] --story [0...4] --hitlimit [INT]').demand(['uiver', 'host', 'story', 'hitlimit']).argv;
 exports.ui_version = parseInt(yargs.uiver)
 
 // setup app
@@ -50,6 +50,7 @@ if (yargs.host == 'ec2sandbox') {
 
 var io = require('socket.io')(https);
 var story_num = parseInt(yargs.story)
+var hitlimit = parseInt(yargs.hitlimit)
 var JsonSentences = null
 var FullParsedSentences = null
 var PreviewParsedSentence = null
@@ -310,110 +311,51 @@ function getLeastViewedContentForUser(userData, clientId, io) {
 		//console.log("user completed sentences")
 		//console.log(user_completed)
 
-		new Model.CompletedSentences().fetchAll().then(function (rd) {
-			if (rd != null) {
-				_.each(rd.models, function (model) {
-					sentences_completed[parseInt(model.attributes.sentence_id)] = {sentence_id: parseInt(model.attributes.sentence_id), times_completed: parseInt(model.attributes.times_completed)}
-				})
-			} else {
-				console.log("no sentences completed by anyone...")
-			}
-			//console.log("full list of sentences times completed")
-			//console.log(sentences_completed)
-
-			_.each(sentences_completed, function (obj, s_id) {
-				if (user_completed.indexOf(parseInt(s_id)) >= 0) {
-					//user has already completed this sentence
+		if (user_completed.length >= hitlimit) {
+			console.log("reached hit limit user:", username)
+			noMoreHits(userData, clientId, io)
+		} else {
+			new Model.CompletedSentences().fetchAll().then(function (rd) {
+				if (rd != null) {
+					_.each(rd.models, function (model) {
+						sentences_completed[parseInt(model.attributes.sentence_id)] = {sentence_id: parseInt(model.attributes.sentence_id), times_completed: parseInt(model.attributes.times_completed)}
+					})
 				} else {
-					user_not_completed.push(obj)
+					console.log("no sentences completed by anyone...")
 				}
+				//console.log("full list of sentences times completed")
+				//console.log(sentences_completed)
 
-			})
+				_.each(sentences_completed, function (obj, s_id) {
+					if (user_completed.indexOf(parseInt(s_id)) >= 0) {
+						//user has already completed this sentence
+					} else {
+						user_not_completed.push(obj)
+					}
 
-			//console.log("remaining sentences for user")
-			//console.log(user_not_completed)
-			var sorted_user_not_completed = _.sortBy(user_not_completed, function (o) {
-				return o.times_completed
-			})
-			var least_user_not_completed = _.filter(sorted_user_not_completed, function (o) {
-				return o.times_completed == sorted_user_not_completed[0].times_completed
-			})
-			if (least_user_not_completed.length > 0) {
-				var return_id = least_user_not_completed[Math.floor(Math.random() * least_user_not_completed.length)].sentence_id;
-				console.log("sentence:", return_id, " is being sent for user:", username)
-				nextHit(userData, [FullParsedSentences[return_id]], clientId, io)
-			} else {
-				console.log("no data left for user:", username)
-				noMoreHits(userData, clientId, io)
-			}
+				})
 
-		})
-
-	})
-
-}
-
-function sliceContent_tmp(fullcontent, userData, clientId, io) {
-	var username = userData.attributes.username
-	var sentences_completed = {}
-	var content_objs = {}
-
-	var return_id = null
-
-	new Model.CompletedSentences().fetchAll().then(function (rd) {
-		if (rd != null) {
-			var max_seen = 0
-			_.each(rd.models, function (model) {
-				if (model.attributes.times_completed > max_seen) {
-					max_seen = model.attributes.times_completed
+				//console.log("remaining sentences for user")
+				//console.log(user_not_completed)
+				var sorted_user_not_completed = _.sortBy(user_not_completed, function (o) {
+					return o.times_completed
+				})
+				var least_user_not_completed = _.filter(sorted_user_not_completed, function (o) {
+					return o.times_completed == sorted_user_not_completed[0].times_completed
+				})
+				if (least_user_not_completed.length > 0) {
+					var return_id = least_user_not_completed[Math.floor(Math.random() * least_user_not_completed.length)].sentence_id;
+					console.log("sentence:", return_id, " is being sent for user:", username)
+					nextHit(userData, [FullParsedSentences[return_id]], clientId, io)
+				} else {
+					console.log("no data left for user:", username)
+					noMoreHits(userData, clientId, io)
 				}
-			})
-
-			_.each(fullcontent, function (s) {
-				var s_obj = JSON.parse(s);
-				sentences_completed[s_obj.id] = max_seen + 1
-				content_objs[s_obj.id] = s
-			})
-
-			_.each(rd.models, function (model) {
-				sentences_completed[model.attributes.sentence_id] = 1 + (max_seen - model.attributes.times_completed)
 
 			})
 		}
-		Model.UserCompletedSentences.where('username', username).fetchAll().then(function (rd) {
-			if (rd != null) {
-
-				_.each(rd.models, function (model) {
-					delete sentences_completed[model.attributes.sentence_id]
-				})
-			}
-			var cumilative_completed = {}
-			var sum = 0
-			_.each(sentences_completed, function (v, k) {
-				v = parseInt(v)
-				//console.log('final', sentences_completed[k], k, v)
-				cumilative_completed[k] = [parseInt(sum), parseInt(sum) + parseInt(v)]
-				sum = parseInt(sum) + parseInt(v)
-			})
-
-			var r = Math.random() * sum
-
-			_.each(cumilative_completed, function (v, k) {
-				//console.log(v[0], v[1], r, k)
-				if (v[0] < r && v[1] > r) {
-					return_id = k
-				}
-			})
-			console.log('returning...', return_id)
-			if (return_id == null || return_id > 215) {
-				console.log("worked has completed all sentences....")
-				noMoreHits(userData, clientId, io)
-			} else {
-				nextHit(userData, [content_objs[return_id]], clientId, io)
-			}
-
-		})
 
 	})
 
 }
+
