@@ -27,7 +27,7 @@ app.get('/', route.index);
 
 app.use(route.notFound404);
 var https = null
-if (yargs.host == 'ec2') {
+if (yargs.host == 'ec2' || yargs.host == 'ec2sandbox') {
 	app.set('port', process.env.PORT || 443);
 	fs = require('fs')
 	var sslOptions = {
