@@ -93,7 +93,7 @@ io.on('connection', function (socket) {
 		})
 	})
 	socket.on('logGuesses', function (msg) {
-		new Model.Guesses({username: msg.username, ui_version: parseInt(msg.ui_version), sentence_id: parseInt(msg.sentence_id), show_reordering: msg.show_reordering, reveal_instantly: msg.reveal_instantly, sentence_state: msg.sentence_state, guesses_state: msg.guesses_state, sentence_visible: msg.sentence_visible}).save().then(function (data) {
+		new Model.Guesses({username: msg.username, ui_version: parseInt(msg.ui_version), sentence_id: parseInt(msg.sentence_id), show_reordering: msg.show_reordering, reveal_instantly: msg.reveal_instantly, sentence_state: msg.sentence_state, guesses_state: msg.guesses_state, sentence_visible: msg.sentence_visible, guesses_visible: msg.guesses_visible}).save().then(function (data) {
 			console.log("new guesses added:" + data.attributes.id)
 		})
 	})
@@ -101,7 +101,7 @@ io.on('connection', function (socket) {
 		console.log('got completion from user!')
 		var sentences_completed = msg.sentences_completed
 		_.each(sentences_completed, function (s) {
-			console.log(s.id, s.points_earned, s.points_bonus, msg.hitId)
+			console.log("--->>", s.id, s.points_earned, s.points_bonus, msg.hitId)
 			new Model.UserCompletedSentences({'username': msg.username, 'assignment_id': msg.assignment_id, 'hit_id': msg.hitId, 'sentence_id': s.id, 'points_earned': parseInt(s.points_earned), 'points_bonus': parseInt(parseFloat(s.points_bonus))}).save().then(function (done) {
 				console.log('saved user completed sentence.')
 			});
@@ -137,7 +137,7 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('userTabbed', function (msg) {
-		new Model.Guesses({username: msg.username, ui_version: parseInt(-1), sentence_id: parseInt(msg.sentence_id), show_reordering: false, reveal_instantly: false, sentence_state: "tabbed out", guesses_state: "tabbed out", sentence_visible: "tabbed out"}).save().then(function (data) {
+		new Model.Guesses({username: msg.username, ui_version: parseInt(-1), sentence_id: parseInt(msg.sentence_id), show_reordering: false, reveal_instantly: false, sentence_state: "tabbed out", guesses_state: "tabbed out", sentence_visible: "tabbed out", guesses_visible: "tabbed out"}).save().then(function (data) {
 			console.log("new tabbed added:" + data.attributes.id)
 		})
 	})

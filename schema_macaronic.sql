@@ -41,6 +41,7 @@ CREATE TABLE mturkGuesses(
   guesses_state text not null,
   sentence_state text not null,
   sentence_visible text,
+  guesses_visible text,
   created_at fieldtype not null default CURRENT_TIMESTAMP
 )engine=innodb charset utf8;
 

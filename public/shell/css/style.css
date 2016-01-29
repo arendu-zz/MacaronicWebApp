@@ -57,8 +57,7 @@ ul.hit li:last-child {
 }
 
 .instructions {
-    font-size: large;
-    color: gray;
+    color: #333333;
 }
 
 #messageBox {
