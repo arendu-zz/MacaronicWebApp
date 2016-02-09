@@ -3,12 +3,12 @@ import _mysql
 import json
 import sys
 import codecs
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
-
 
 from collection_of_edits import Sentence, Node, Graph, Edge, Swap
 
@@ -177,7 +177,7 @@ if __name__ == '__main__':
             for guess in r_guesses:
                 sent_visible = guess[f_guesses.index('sentence_visible')]
                 if sent_visible.lower() != 'tabbed out':
-                    guesses = json.loads(guess[f_guesses.index('guesses_state')])['sentenceGuess']
+                    guesses = json.loads(unicode(guess[f_guesses.index('guesses_state')], 'utf-8'))['sentenceGuess']
                     current_guesses = [Guess(id=(int(g['l2_node_id']), int(g['l2_node_graph_id'])),
                                              guess=g['guess'],
                                              revealed=g['revealed'],
@@ -185,7 +185,7 @@ if __name__ == '__main__':
                                        for g in guesses]
                     current_revealed_guesses = [crg.copy() for crg in current_guesses if crg['revealed']]
                     current_unrevealed_guesses = [crg.copy() for crg in current_guesses if not crg['revealed']]
-                    sent_dict = json.loads(guess[f_guesses.index('sentence_state')])
+                    sent_dict = json.loads(unicode(guess[f_guesses.index('sentence_state')], 'utf-8'))
                     sent_obj = Sentence.from_dict(sent_dict)
                     current_sent_state = get_visible_nodes(sent_obj)
                     ti = TrainingInstance(user_id=user_id,
@@ -201,8 +201,8 @@ if __name__ == '__main__':
                                         rg['revealed'] and rg['guess'].strip() != '']
                     past_correct_guesses.update(revealed_guesses)
                     print json.dumps(ti)
-                    # x_ti = json.dumps(ti)
-                    # new_ti = TrainingInstance.from_dict(json.loads(x_ti))
+                    x_ti = json.dumps(ti)
+                    new_ti = TrainingInstance.from_dict(json.loads(x_ti))
                 else:
                     log('skipping guess, tabbed out...')
 
