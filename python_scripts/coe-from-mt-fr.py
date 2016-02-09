@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 __author__ = 'arenduchintala'
 import codecs
 from optparse import OptionParser
@@ -8,47 +7,14 @@ from pets import get_swap_rules, get_split_sets
 import json
 import sys
 import operator
-import itertools
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
-
 VIS_LANG = 'de'
 INPUT_LANG = 'de'
-USE_SPLIT = False
-
-
-def check_initial_orders(sent_obj, vis_lang):
-    vis_toks = []
-    if vis_lang == 'de':
-        vis_toks = sent_obj.en.split()
-    else:
-        vis_toks = sent_obj.de.split()
-
-    vis_nodes = []
-    for g in sent_obj.graphs:
-        for n in g.nodes:
-            if n.visible:
-                vis_nodes.append((n.visible_order, n.s))
-
-    vis_nodes.sort()
-    vis_node_toks = [n for i, n in vis_nodes]
-    sys.stderr.write('en: ' + sent_obj.en + '\n')
-    sys.stderr.write(' '.join(vis_toks) + '\n')
-    sys.stderr.write(' '.join(vis_node_toks) + '\n')
-
-    for v_n_tok, v_tok in zip(vis_node_toks, vis_toks):
-        sys.stderr.write(v_n_tok + ' vs ' + v_tok + '\n')
-        assert v_n_tok == v_tok
-    return True
-
-
-def logit(str, priority=10):
-    if priority > 5:
-        sys.stderr.write(str)
 
 
 def get_contiguous(lst):
@@ -339,15 +305,14 @@ def make_edges_with_intermediate_nodes(from_nodes, to_nodes, intermediate, graph
     edges = []
     # import pdb
 
-
-
+    # if len(to_nodes) == 1 and len(from_nodes) > 1:
+    # pdb.set_trace()
     has_intermediate = False
-    if (len(to_nodes) == 1 and len(from_nodes) == 1) or (len(to_nodes) > 1 and len(from_nodes) == 1):
-        for f, t in product(from_nodes, to_nodes):
-            int_tok = intermediate.get((f.s, t.s), None)
-            repeat = int_tok in [i.s for i in from_nodes]
-            has_intermediate = (int_tok is not None and int_tok != 'NULL' and f.s != t.s) or has_intermediate
-            has_intermediate = has_intermediate and (not repeat)
+    for f, t in product(from_nodes, to_nodes):
+        int_tok = intermediate.get((f.s, t.s), None)
+        repeat = int_tok in [i.s for i in from_nodes]
+        has_intermediate = (int_tok is not None and int_tok != 'NULL' and f.s != t.s) or has_intermediate
+        has_intermediate = has_intermediate and (not repeat)
 
     if has_intermediate:
         for f, t in product(from_nodes, to_nodes):
@@ -356,7 +321,7 @@ def make_edges_with_intermediate_nodes(from_nodes, to_nodes, intermediate, graph
                 int_tok = f.s  # why force this?
             else:
                 pass
-            logit('int:' + int_tok + ' in:' + f.s + '-' + t.s + '\n')
+            sys.stderr.write('int:' + int_tok + ' in:' + f.s + '-' + t.s + '\n')
             int_node = f.makecopy()
             int_node.id = len(graph.nodes)
             int_node.s = int_tok
@@ -425,7 +390,7 @@ def find_nearest_node_with_property(n, direction, graph):
 
 def propagate(graph):
     graph.set_visibility(VIS_LANG)
-    # graph.cognate_visibility(VIS_LANG)
+    #graph.cognate_visibility(VIS_LANG)
     for n in graph.nodes:
         if n.de_id is None:
             de_n = n
@@ -483,47 +448,19 @@ def get_dep_parse(path):
     return dep_parses
 
 
-def compute_vocab_histogram(sentence_list):
-    hist = {}
-    for line in sentence_list:
-        for word in line.split():
-            c = hist.get(word.lower(), 0.0) + 1.0
-            hist[word.lower()] = c
-    m = max(hist.values())
-    hist = dict((k, v / m) for k, v in hist.iteritems())
-    return hist
-
-
 if __name__ == '__main__':
     opt = OptionParser()
 
-    opt.add_option('-i', dest='input_mt', default='')
-    opt.add_option('-s', dest='split_string', default='')
-    opt.add_option('-o', dest='output_mt', default='')
-    opt.add_option('-e', dest='intermediate', default='')
+    opt.add_option('-i', dest='input_mt', default='../data/fr/newstest2013/newstest2013.input.tok.1')
+    opt.add_option('-o', dest='output_mt', default='../data/fr/newstest2013/newstest2013.output.1.wa')
+    opt.add_option('-e', dest='intermediate', default='../data/fr/newstest2013/newstest2013.input.tok.1.edges.uniq.intermediate')
     # opt.add_option('-p', dest='input_parse', default='../web/newstest2013/newstest2013.input.tok.1.parsed')
-    opt.add_option('-p', dest='input_parse', default='')
-    opt.add_option('-d', dest='is_demo', default='0')
-    opt.add_option('--out', dest='output_stem', default='')
+    opt.add_option('-p', dest='input_parse', default='../data/fr/newstest2013/newstest2013.input.tok.1.dep.parsed')
     # opt.add_option('--e2f', dest='e2f', default='../web/newstest2013/lex1.e2f.small')
     # opt.add_option('--f2e', dest='f2e', default='../web/newstest2013/lex1.f2e.small')
     (options, _) = opt.parse_args()
-    if options.input_mt == '' or options.output_mt == '' or options.intermediate == '' or options.input_parse == '' or options.output_stem == '':
-        logit(
-            'Usage: python coe-from-mt.py -i INPUT_MT -o OUTPUT_MT -e INTERMEDIATE_EDGES -p INPUT_MT_PARSED -s SPLIT_STRING --out OUTPUT_STEM\n',
-            10)
-        exit(-1)
-    else:
-        pass
-    if options.split_string == '':
-        USE_SPLIT = False
-        logit('no split string, split every 5 sentences')
-    else:
-        USE_SPLIT = True
-    is_demo = int(options.is_demo) == 1
     input_parsed = get_dep_parse(options.input_parse)
     input_mt = codecs.open(options.input_mt, 'r', 'utf-8').readlines()
-    input_histogram = compute_vocab_histogram(input_mt)
     output_mt = codecs.open(options.output_mt, 'r', 'utf-8').readlines()
     intermediate_nodes = {}
     for l in codecs.open(options.intermediate, 'r', 'utf-8').readlines():
@@ -532,29 +469,11 @@ if __name__ == '__main__':
     assert len(input_mt) == len(output_mt)
     sent_idx = 0
     eps_word_alignment = 0
-    all_coe_sentences = []
     coe_sentences = []
-    sentences_used = []
-    for sent_idx, (input_line, output_line, input_parse) in enumerate(zip(input_mt, output_mt, input_parsed)[:200]):
-        if len(input_line.split()) < 2 or len(input_line.split()) > 25:
-            # SKIP SHORT AND LONG SENTENCES
-            continue
-        logit('len all coe ' + str(len(all_coe_sentences)) + ' len coe ' + str(
-            len(coe_sentences)) + ' using split: ' + str(USE_SPLIT) + 'split string:' + options.split_string + '\n')
-        if USE_SPLIT:
-            if input_line.lower().strip() == options.split_string.lower().strip():
-                if len(coe_sentences) > 0:
-                    all_coe_sentences.append(coe_sentences)
-                coe_sentences = []
-                continue
-        else:
-            if len(coe_sentences) == 10:
-                all_coe_sentences.append(coe_sentences)
-                coe_sentences = []
+    for input_line, output_line, input_parse in zip(input_mt, output_mt, input_parsed)[:200]:
 
-        logit('SENT' + str(sent_idx) + '\n')
+        sys.stderr.write('SENT' + str(sent_idx) + '\n')
         input_sent = input_line.strip().split()
-        sentences_used.append(str(sent_idx) + "\t" + input_line.strip())
         output_items = output_line.strip().split('|')
         output_phrases = [oi.strip() for idx, oi in enumerate(output_items) if idx % 2 == 0 and oi.strip() != '']
         output_sent = ' '.join(output_phrases).split()
@@ -565,30 +484,24 @@ if __name__ == '__main__':
         input_tok_group = [-1] * len(input_sent)
         output_tok_group = [-1] * len(output_sent)
 
-        logit('input sent:' + ' '.join(input_sent) + '\n')
-        logit('output sent:' + ' '.join(output_sent) + '\n')
+        sys.stderr.write('input sent:' + ' '.join(input_sent) + '\n')
+        sys.stderr.write('output sent:' + ' '.join(output_sent) + '\n')
 
         coe_sentence = Sentence(sent_idx, ' '.join(input_sent), ' '.join(output_sent), None)
         coe_sentence.initial_order_by = VIS_LANG
-
+        sent_idx += 1
         assert len(wa_per_span) == len(input_spans) == len(output_spans)
         phrase_dict = {}
         input_coverage = [0] * len(input_sent)
         group_idx = 0
-
         for idx, (out_span, inp_span, wa) in enumerate(zip(output_spans, input_spans, wa_per_span)):
             out_phrase = output_sent[out_span[0]:out_span[1] + 1]
             inp_phrase = input_sent[inp_span[0]:inp_span[1] + 1]
-            print '\t phrases:', inp_phrase, '-', out_phrase
-            print '\t phrase spans:', inp_span, '-', out_span
-            print '\twa:', wa
-            i_phrase_wa = [i for i, j in wa]
-            o_phrase_wa = [j for i, j in wa]
-            true_i_phrase = [tok for i, tok in enumerate(inp_phrase) if i in i_phrase_wa]
-            true_o_phrase = [tok for i, tok in enumerate(out_phrase) if i in o_phrase_wa]
-            print '\t true phrases:', true_i_phrase, '-', true_o_phrase
-
-            wa_no_null = wa  # insert_epsilon_edge(wa, true_i_phrase, true_o_phrase)
+            # print '\t phrases:', input_sent[inp_span[0]:inp_span[1] + 1], '-', output_sent[out_span[0]:out_span[1] + 1]
+            # print '\t phrase spans:', inp_span, '-', out_span
+            # print '\twa:', wa
+            wa_no_null = insert_epsilon_edge(wa, input_sent[inp_span[0]:inp_span[1] + 1],
+                                             output_sent[out_span[0]:out_span[1] + 1])
             sym_coverage, sym_wa = make_symmetric(wa_no_null)
             assert sym_coverage == 0
             untangle = untangle_wa(sym_wa)
@@ -611,7 +524,6 @@ if __name__ == '__main__':
                     input_tok_group[inp_span[0] + iu_idx] = group_idx
                     n = Node(node_idx, input_sent[inp_span[0] + iu_idx], None, inp_span[0] + iu_idx, DE_LANG,
                              VIS_LANG == DE_LANG, True, False, False)
-                    n.frequency = input_histogram[n.s.lower()]
                     node_idx += 1
                     to_nodes.append(n)
 
@@ -636,15 +548,14 @@ if __name__ == '__main__':
                                                                      intermediate=intermediate_nodes, graph=coe_graph)
                 coe_sentence.graphs.append(coe_graph)
                 group_idx += 1
-                # pprint(final_groups)
-                # pdb.set_trace()
+
         if 0 in input_coverage:
             eps_word_alignment += 1
             assert 0 not in input_coverage
 
         coe_sentence.graphs = sort_groups_by_lang(coe_sentence.graphs, VIS_LANG)
-        logit(' '.join([str(i) for i in input_tok_group]) + '\n')
-        logit(' '.join([str(i) for i in output_tok_group]) + '\n')
+        sys.stderr.write(' '.join([str(i) for i in input_tok_group]) + '\n')
+        sys.stderr.write(' '.join([str(i) for i in output_tok_group]) + '\n')
 
         split_inp, split_out, split_orderings = mark_swaps_transfers_interrupts(
             input_tok_group,
@@ -652,12 +563,12 @@ if __name__ == '__main__':
         split_sets = get_split_sets(split_inp, split_out)
         swap_rules = get_swap_rules(coe_sentence, input_tok_group, output_tok_group, input_parse, split_sets, VIS_LANG)
         for sr in swap_rules:
-            logit('swaps-pets:' + str(sr) + '\n')
+            sys.stderr.write('swaps-pets:' + str(sr) + '\n')
 
         split_inp_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_inp.items()])
-        logit('split inp:' + split_inp_str + '\n')
+        sys.stderr.write('split inp:' + split_inp_str + '\n')
         split_out_str = ' '.join([str(i) + "-" + ','.join([str(k) for k in j[0]]) for i, j in split_out.items()])
-        logit('split out:' + split_out_str + '\n')
+        sys.stderr.write('split out:' + split_out_str + '\n')
         if len(split_inp) or len(split_out):
             pass  # pdb.set_trace()
         swap_objs = []
@@ -737,53 +648,13 @@ if __name__ == '__main__':
 
             for n in g.nodes:
                 assert n.en_id is not None and n.de_id is not None
-
-        coe_sentence.set_initial_node_orders(VIS_LANG)
         propagate_split_info(coe_sentence)
-        check_initial_orders(coe_sentence, VIS_LANG)
-        # logit('done sent' + str(sent_idx) + '\n')
+        # sys.stderr.write('done sent' + str(sent_idx) + '\n')
 
         json_sentence_str = json.dumps(coe_sentence, indent=4, sort_keys=True)
         coe_sentences.append(' '.join(json_sentence_str.split()))
-    if len(coe_sentences) > 0:
-        all_coe_sentences.append(coe_sentences)
-    logit('done' + str(eps_word_alignment) + ' errors\n', priority=10)
-    # FLATTEN THE LIST
-    all_coe_sentences = list(itertools.chain.from_iterable(all_coe_sentences))
-    logit('size:' + str(len(all_coe_sentences)) + '\n', priority=10)
-    main_coe_sentences = all_coe_sentences[:-1]
-    preview_coe_sentences = all_coe_sentences[-1:]
-    main_output = '\n'.join(['var json_str_arr = ' + str(main_coe_sentences), 'module.exports.Story1 = json_str_arr'])
-    preview_output = '\n'.join(
-        ['var json_str_arr = ' + str(preview_coe_sentences), 'module.exports.Preview = json_str_arr'])
-    main_sentences = '\n'.join(sentences_used[:-1])
-    preview_sentences = '\n'.join(sentences_used[-1:])
-    f = codecs.open(options.output_stem + '.state', 'w', 'utf8')
-    f.write('\n'.join(main_coe_sentences))
-    f.flush()
-    f.close()
-    f = codecs.open(options.output_stem + '.preview.state', 'w', 'utf8')
-    f.write('\n'.join(preview_coe_sentences))
-    f.flush()
-    f.close()
-    f = codecs.open(options.output_stem + '.js', 'w', 'utf8')
-    f.write(main_output)
-    f.flush()
-    f.close()
-    f = codecs.open(options.output_stem + '.sent', 'w', 'utf8')
-    f.write(main_sentences)
-    f.flush()
-    f.close()
-    f = codecs.open(options.output_stem + '.preview.js', 'w', 'utf8')
-    f.write(preview_output)
-    f.flush()
-    f.close()
-    f = codecs.open(options.output_stem + '.preview.sent', 'w', 'utf8')
-    f.write(preview_sentences)
-    f.flush()
-    f.close()
-
-
+    sys.stderr.write('done' + str(eps_word_alignment) + ' errors\n')
+    print 'var json_str_arr = ', coe_sentences
 
 
 

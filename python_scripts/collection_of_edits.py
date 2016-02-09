@@ -66,9 +66,12 @@ class Node(dict):
     @staticmethod
     def from_dict(dict_):
         """ Recursively (re)construct TreeNode-based tree from dictionary. """
+        frq = 0.0
         n = Node(dict_['id'], dict_['s'], dict_['en_id'], dict_['de_id'], dict_['lang'], dict_['visible'],
                  dict_['to_en'],
-                 dict_['to_de'], dict_['ir'], dict_['frequency'])
+                 dict_['to_de'], dict_['ir'])
+        n.visible_order = dict_['visible_order']
+        n.frequency = frq
         return n
 
 
@@ -137,22 +140,22 @@ class Graph(dict):
     def from_dict(dict_):
         g = Graph(dict_['id'])
         g.er = dict_['er']
-        g.initial_order = dict_['initial_order']
+        g.initial_order = None #dict_['initial_order']
         g.internal_reorder_by = dict_['internal_reorder_by']
         g.external_reorder_by = dict_['external_reorder_by']
-        g.transfers = dict_['transfers']
+        g.transfers = None #dict_['transfers']
         g.splits = dict_['splits']
-        g.currently_split = dict_['currently_split']
+        g.currently_split = None #dict_['currently_split']
         g.swaps = dict_['swaps']
         g.swap_toward_de = list(map(Swap.from_dict, dict_['swap_toward_de']))
         g.swap_toward_en = list(map(Swap.from_dict, dict_['swap_toward_en']))
-        g.dependents = dict_['dependents']
+        g.dependents = None #dict_['dependents']
 
-        g.separator_positions = dict_['separator_position']
+        g.separator_positions = dict_['separator_positions']
         g.separators = dict_['separators']
 
         g.is_separator = dict_['is_separator']
-        g.split_interaction = dict_['split_interaction']
+        g.split_interaction = None #dict_['split_interaction']
 
         g.split_order_by_de = dict_['split_order_by_de']
         g.split_order_by_en = dict_['split_order_by_en']
@@ -339,9 +342,10 @@ class Sentence(dict):
 
     @staticmethod
     def from_dict(dict_):
-        s = dict_['id']
+        s = Sentence(None, None, None, None)
+        s.id = dict_['id']
         s.initial_order_by = dict_['initial_order_by']
-        s.graphs = list(map(Sentence.from_dict, dict_['graphs']))
+        s.graphs = list(map(Graph.from_dict, dict_['graphs']))
         return s
 
 
