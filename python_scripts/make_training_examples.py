@@ -2,6 +2,13 @@ __author__ = 'arenduchintala'
 import _mysql
 import json
 import sys
+import codecs
+reload(sys)
+sys.setdefaultencoding('utf-8')
+sys.stdin = codecs.getreader('utf-8')(sys.stdin)
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+sys.stdout.encoding = 'utf-8'
+
 
 from collection_of_edits import Sentence, Node, Graph, Edge, Swap
 
