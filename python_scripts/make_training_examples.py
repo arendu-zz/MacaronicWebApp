@@ -1,5 +1,5 @@
 __author__ = 'arenduchintala'
-import _mysql
+import MySQLdb
 import json
 import sys
 import codecs
@@ -95,17 +95,21 @@ class Guess(dict):
 
     @staticmethod
     def from_dict(_dict):
-        g = Guess(id=_dict['id'], guess=_dict['guess'], revealed=_dict['revealed'], l2_word=_dict['l2_word'])
+        g = Guess(id=tuple(_dict['id']),
+                  guess=_dict['guess'],
+                  revealed=_dict['revealed'],
+                  l2_word=_dict['l2_word'])
         return g
 
 
 class SimpleNode(dict):
-    def __init__(self, sent_id, id, l2_word, position, lang):
+    def __init__(self, sent_id, id, l2_word, position, lang, l1_parent):
         dict.__init__(self)
         self.__dict__ = self
         self.sent_id = sent_id
         self.id = id
         self.l2_word = l2_word
+        self.l1_parent = l1_parent
         self.position = int(position)
         self.lang = lang
 
@@ -119,7 +123,11 @@ class SimpleNode(dict):
 
     @staticmethod
     def from_dict(_dict):
-        s = SimpleNode(sent_id=_dict['sent_id'], id=_dict['id'], l2_word=_dict['l2_word'], position=_dict['position'],
+        s = SimpleNode(sent_id=_dict['sent_id'],
+                       id=tuple(_dict['id']),
+                       l2_word=_dict['l2_word'],
+                       l1_parent=_dict['l1_parent'],
+                       position=_dict['position'],
                        lang=_dict['lang'])
         return s
 
@@ -131,8 +139,11 @@ def get_visible_nodes(sent_state):
             if n.visible:
                 if n.s == '@-@':
                     n.s = '-'
+                pns = g.get_neighbor_nodes(n, 'en')
+                pns_en = sorted([(pn.en_id, pn) for pn in pns])
+                pn_tok = ' '.join([i[1].s for i in pns_en])
                 sn = SimpleNode(sent_id=sent_state.id, id=(n.id, g.id), l2_word=n.s, position=int(n.visible_order),
-                                lang=n.lang)
+                                lang=n.lang, l1_parent=pn_tok.strip())
                 simple_nodes.append(sn)
     simple_nodes.sort()
     return simple_nodes
@@ -157,7 +168,7 @@ def log(msg, priority=20):
 
 if __name__ == '__main__':
     training_instances = []
-    db = _mysql.connect(host="localhost", user="root", passwd="", db="macaronicdb")
+    db = MySQLdb.connect(host="localhost", user="root", passwd="", db="macaronicdb", charset='utf8', use_unicode=True)
     f_ucs, r_ucs = get_results(db, "select distinct username from mturkGuesses;")
     for row_user in r_ucs:
         user_id = row_user[f_ucs.index('username')]
@@ -170,14 +181,16 @@ if __name__ == '__main__':
         r_user_sent[:] = unique(r_user_sent)
         for row_user_sent in r_user_sent:
             sent_id = row_user_sent
-            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + sent_id + "' order by created_at;"
+            # print user_id, sent_id
+            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + str(
+                sent_id) + "' order by created_at;"
             f_guesses, r_guesses = get_results(db, query)
             # print len(r_guesses), 'guesses found for ', user_id, sent_id
             past_guesses_for_current_sent = set([])
             for guess in r_guesses:
                 sent_visible = guess[f_guesses.index('sentence_visible')]
                 if sent_visible.lower() != 'tabbed out':
-                    guesses = json.loads(unicode(guess[f_guesses.index('guesses_state')], 'utf-8'))['sentenceGuess']
+                    guesses = json.loads(guess[f_guesses.index('guesses_state')])['sentenceGuess']
                     current_guesses = [Guess(id=(int(g['l2_node_id']), int(g['l2_node_graph_id'])),
                                              guess=g['guess'],
                                              revealed=g['revealed'],
@@ -185,7 +198,7 @@ if __name__ == '__main__':
                                        for g in guesses]
                     current_revealed_guesses = [crg.copy() for crg in current_guesses if crg['revealed']]
                     current_unrevealed_guesses = [crg.copy() for crg in current_guesses if not crg['revealed']]
-                    sent_dict = json.loads(unicode(guess[f_guesses.index('sentence_state')], 'utf-8'))
+                    sent_dict = json.loads(guess[f_guesses.index('sentence_state')])
                     sent_obj = Sentence.from_dict(sent_dict)
                     current_sent_state = get_visible_nodes(sent_obj)
                     ti = TrainingInstance(user_id=user_id,
@@ -208,7 +221,3 @@ if __name__ == '__main__':
 
             past_sentences_seen.add(sent_id)
     log('done')
-
-
-
-
