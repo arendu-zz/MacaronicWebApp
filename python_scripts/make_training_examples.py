@@ -1,8 +1,9 @@
 __author__ = 'arenduchintala'
-import _mysql
+import MySQLdb
 import json
 import sys
 import codecs
+from collection_of_edits import Sentence, Node, Graph, Edge, Swap
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -10,7 +11,6 @@ sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 
-from collection_of_edits import Sentence, Node, Graph, Edge, Swap
 
 
 def unique(seq):
@@ -157,7 +157,7 @@ def log(msg, priority=20):
 
 if __name__ == '__main__':
     training_instances = []
-    db = _mysql.connect(host="localhost", user="root", passwd="", db="macaronicdb")
+    db = MySQLdb.connect(host="localhost", user="root", passwd="", db="macaronicdb", charset='utf8', use_unicode=True)
     f_ucs, r_ucs = get_results(db, "select distinct username from mturkGuesses;")
     for row_user in r_ucs:
         user_id = row_user[f_ucs.index('username')]
@@ -170,14 +170,14 @@ if __name__ == '__main__':
         r_user_sent[:] = unique(r_user_sent)
         for row_user_sent in r_user_sent:
             sent_id = row_user_sent
-            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + sent_id + "' order by created_at;"
+            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + str(sent_id) + "' order by created_at;"
             f_guesses, r_guesses = get_results(db, query)
             # print len(r_guesses), 'guesses found for ', user_id, sent_id
             past_guesses_for_current_sent = set([])
             for guess in r_guesses:
                 sent_visible = guess[f_guesses.index('sentence_visible')]
                 if sent_visible.lower() != 'tabbed out':
-                    guesses = json.loads(unicode(guess[f_guesses.index('guesses_state')], 'utf-8'))['sentenceGuess']
+                    guesses = json.loads(guess[f_guesses.index('guesses_state')])['sentenceGuess']
                     current_guesses = [Guess(id=(int(g['l2_node_id']), int(g['l2_node_graph_id'])),
                                              guess=g['guess'],
                                              revealed=g['revealed'],
@@ -185,7 +185,7 @@ if __name__ == '__main__':
                                        for g in guesses]
                     current_revealed_guesses = [crg.copy() for crg in current_guesses if crg['revealed']]
                     current_unrevealed_guesses = [crg.copy() for crg in current_guesses if not crg['revealed']]
-                    sent_dict = json.loads(unicode(guess[f_guesses.index('sentence_state')], 'utf-8'))
+                    sent_dict = json.loads(guess[f_guesses.index('sentence_state')])
                     sent_obj = Sentence.from_dict(sent_dict)
                     current_sent_state = get_visible_nodes(sent_obj)
                     ti = TrainingInstance(user_id=user_id,
@@ -201,8 +201,8 @@ if __name__ == '__main__':
                                         rg['revealed'] and rg['guess'].strip() != '']
                     past_correct_guesses.update(revealed_guesses)
                     print json.dumps(ti)
-                    x_ti = json.dumps(ti)
-                    new_ti = TrainingInstance.from_dict(json.loads(x_ti))
+                    #x_ti = json.dumps(ti)
+                    #new_ti = TrainingInstance.from_dict(json.loads(x_ti))
                 else:
                     log('skipping guess, tabbed out...')
 
