@@ -95,17 +95,21 @@ class Guess(dict):
 
     @staticmethod
     def from_dict(_dict):
-        g = Guess(id=_dict['id'], guess=_dict['guess'], revealed=_dict['revealed'], l2_word=_dict['l2_word'])
+        g = Guess(id=tuple(_dict['id']),
+                  guess=_dict['guess'],
+                  revealed=_dict['revealed'],
+                  l2_word=_dict['l2_word'])
         return g
 
 
 class SimpleNode(dict):
-    def __init__(self, sent_id, id, l2_word, position, lang):
+    def __init__(self, sent_id, id, l2_word, position, lang, l1_parent):
         dict.__init__(self)
         self.__dict__ = self
         self.sent_id = sent_id
         self.id = id
         self.l2_word = l2_word
+        self.l1_parent = l1_parent
         self.position = int(position)
         self.lang = lang
 
@@ -119,7 +123,11 @@ class SimpleNode(dict):
 
     @staticmethod
     def from_dict(_dict):
-        s = SimpleNode(sent_id=_dict['sent_id'], id=_dict['id'], l2_word=_dict['l2_word'], position=_dict['position'],
+        s = SimpleNode(sent_id=_dict['sent_id'],
+                       id=tuple(_dict['id']),
+                       l2_word=_dict['l2_word'],
+                       l1_parent=_dict['l1_parent'],
+                       position=_dict['position'],
                        lang=_dict['lang'])
         return s
 
@@ -131,8 +139,11 @@ def get_visible_nodes(sent_state):
             if n.visible:
                 if n.s == '@-@':
                     n.s = '-'
+                pns = g.get_neighbor_nodes(n, 'en')
+                pns_en = sorted([(pn.en_id, pn) for pn in pns])
+                pn_tok = ' '.join([i[1].s for i in pns_en])
                 sn = SimpleNode(sent_id=sent_state.id, id=(n.id, g.id), l2_word=n.s, position=int(n.visible_order),
-                                lang=n.lang)
+                                lang=n.lang, l1_parent=pn_tok.strip())
                 simple_nodes.append(sn)
     simple_nodes.sort()
     return simple_nodes
@@ -166,7 +177,7 @@ if __name__ == '__main__':
         f_user_sent, r_user_sent = get_results(db,
                                                "select distinct created_at,sentence_id from mturkGuesses where username='" + user_id + "';")
         r_user_sent.sort()
-        r_user_sent = [s_id for cr, s_id in r_user_sent if s_id]
+        r_user_sent = [int(s_id) for cr, s_id in r_user_sent]
         r_user_sent[:] = unique(r_user_sent)
         for row_user_sent in r_user_sent:
             sent_id = row_user_sent
@@ -208,7 +219,3 @@ if __name__ == '__main__':
 
             past_sentences_seen.add(sent_id)
     log('done')
-
-
-
-
