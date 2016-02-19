@@ -12,7 +12,6 @@ sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 
 
-
 def unique(seq):
     """
     return a unique/distinct items while preserving the order in which they occurred in the original input
@@ -181,7 +180,8 @@ if __name__ == '__main__':
         r_user_sent[:] = unique(r_user_sent)
         for row_user_sent in r_user_sent:
             sent_id = row_user_sent
-            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + str(sent_id) + "' order by created_at;"
+            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + str(
+                sent_id) + "' order by created_at;"
             f_guesses, r_guesses = get_results(db, query)
             # print len(r_guesses), 'guesses found for ', user_id, sent_id
             past_guesses_for_current_sent = set([])
@@ -211,9 +211,11 @@ if __name__ == '__main__':
                     revealed_guesses = [rg.copy((None, None)) for rg in current_guesses if
                                         rg['revealed'] and rg['guess'].strip() != '']
                     past_correct_guesses.update(revealed_guesses)
-                    print json.dumps(ti)
-                    #x_ti = json.dumps(ti)
-                    #new_ti = TrainingInstance.from_dict(json.loads(x_ti))
+                    true_guesses = ''.join([g.guess for kg, g in ti.current_guesses.iteritems()])
+                    if true_guesses.strip() != '':
+                        print json.dumps(ti)
+                    # x_ti = json.dumps(ti)
+                    # new_ti = TrainingInstance.from_dict(json.loads(x_ti))
                 else:
                     log('skipping guess, tabbed out...')
 
