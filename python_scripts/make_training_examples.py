@@ -3,6 +3,7 @@ import MySQLdb
 import json
 import sys
 import codecs
+from collection_of_edits import Sentence, Node, Graph, Edge, Swap
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -10,7 +11,6 @@ sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
 
-from collection_of_edits import Sentence, Node, Graph, Edge, Swap
 
 
 def unique(seq):
@@ -177,13 +177,11 @@ if __name__ == '__main__':
         f_user_sent, r_user_sent = get_results(db,
                                                "select distinct created_at,sentence_id from mturkGuesses where username='" + user_id + "';")
         r_user_sent.sort()
-        r_user_sent = [s_id for cr, s_id in r_user_sent if s_id]
+        r_user_sent = [int(s_id) for cr, s_id in r_user_sent]
         r_user_sent[:] = unique(r_user_sent)
         for row_user_sent in r_user_sent:
             sent_id = row_user_sent
-            # print user_id, sent_id
-            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + str(
-                sent_id) + "' order by created_at;"
+            query = "select * from mturkGuesses where username='" + user_id + "'  and sentence_id='" + str(sent_id) + "' order by created_at;"
             f_guesses, r_guesses = get_results(db, query)
             # print len(r_guesses), 'guesses found for ', user_id, sent_id
             past_guesses_for_current_sent = set([])
@@ -214,8 +212,8 @@ if __name__ == '__main__':
                                         rg['revealed'] and rg['guess'].strip() != '']
                     past_correct_guesses.update(revealed_guesses)
                     print json.dumps(ti)
-                    x_ti = json.dumps(ti)
-                    new_ti = TrainingInstance.from_dict(json.loads(x_ti))
+                    #x_ti = json.dumps(ti)
+                    #new_ti = TrainingInstance.from_dict(json.loads(x_ti))
                 else:
                     log('skipping guess, tabbed out...')
 
