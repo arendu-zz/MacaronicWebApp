@@ -23,34 +23,35 @@ html
         script(type='text/javascript', src='/MacaronicParseUI/js/regex_tokenizer.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/PorterStemmer1980.min.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/discrete.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/glove.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/similarity.js')
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup("#{user.username}", socket, parseInt("#{ui_version}"), false ,"#{sentence_prefered}")
+                setup("#{user.username}", socket, parseInt("#{ui_version}"), false, "#{sentence_prefered}")
 
-                if ("#{user.assignmentId}" === ""){
+                if ("#{user.assignmentId}" === "") {
                     assignmentId = "ASSIGNMENTID_NOT_AVAILABLE"
-                }else{
+                } else {
                     assignmentId = "#{user.assignmentId}"
                 }
-                if ("#{hitId}" === ""){
+                if ("#{hitId}" === "") {
                     hitId = "HIT_ID_NOT_AVAILABLE"
-                }else{
+                } else {
                     hitId = "#{hitId}"
                 }
 
             });
 
-            document.addEventListener("visibilitychange", function() {
+            document.addEventListener("visibilitychange", function () {
                 if (document.hidden) {
                     console.log("not visible!!!")
                 } else {
                     console.log("visible!!!")
-                    if ($('#confirmInput').prop("disabled") == true){
+                    if ($('#confirmInput').prop("disabled") == true) {
                         updateMessageBox('<b>Please do not visit other pages/tabs while making guesses.</b>', true)
                         emitUserTabOut()
                     }
-
 
                 }
             });
@@ -64,20 +65,20 @@ html
                 form.attr("method", "post");
                 form.attr("action", "#{submit_url}");
                 //form.attr("action", "https://workersandbox.mturk.com/mturk/externalSubmit");
-                $.each(params, function(key, value) {
+                $.each(params, function (key, value) {
                     var field = $('<input></input>');
                     field.attr("type", "hidden");
                     field.attr("name", key);
                     field.attr("value", value);
                     form.append(field);
-                    console.log("name", key , "val", value);
+                    console.log("name", key, "val", value);
                 });
                 $(document.body).append(form);
                 completedTask()
-                if ("#{submit_url}" == ""){
+                if ("#{submit_url}" == "") {
                     console.log("not submitting to mturk")
                     get_new_task("#{sentence_prefered}")
-                }else{
+                } else {
                     console.log("submit to :" + "#{submit_url}")
                     form.submit();
                 }

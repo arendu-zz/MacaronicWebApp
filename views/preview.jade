@@ -23,19 +23,21 @@ html
         script(type='text/javascript', src='/MacaronicParseUI/js/regex_tokenizer.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/PorterStemmer1980.min.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/discrete.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/glove.js')
+        script(type='text/javascript', src='/MacaronicParseUI/js/similarity.js')
         script.
             $(document).ready(function () {
                 var socket = io();
-                setup("#{user.username}", socket, parseInt("#{ui_version}"), true ,"#{sentence_prefered}")
+                setup("#{user.username}", socket, parseInt("#{ui_version}"), true, "#{sentence_prefered}")
 
-                if ("#{user.assignmentId}" === ""){
+                if ("#{user.assignmentId}" === "") {
                     assignmentId = "ASSIGNMENT_ID_NOT_AVAILABLE"
-                }else{
+                } else {
                     assignmentId = "#{user.assignmentId}"
                 }
-                if ("#{hitId}" === ""){
+                if ("#{hitId}" === "") {
                     hitId = "HIT_ID_NOT_AVAILABLE"
-                }else{
+                } else {
                     hitId = "#{hitId}"
                 }
 
@@ -45,13 +47,13 @@ html
                 var form = $('<form></form>');
                 form.attr("method", "post");
                 form.attr("action", "https://workersandbox.mturk.com/mturk/externalSubmit");
-                $.each(parameters, function(key, value) {
+                $.each(parameters, function (key, value) {
                     var field = $('<input></input>');
                     field.attr("type", "hidden");
                     field.attr("name", key);
                     field.attr("value", value);
                     form.append(field);
-                    console.log("name", key , "val", value);
+                    console.log("name", key, "val", value);
                 });
                 $(document.body).append(form);
                 completedTask()
@@ -66,19 +68,17 @@ html
                 li Guess the correct translation of each foreign word in a sentence and get points for a translation.
                 li After making intial guesses click
                     b  'Submit Guess'
-                li Correct guesses will be shaded green and will earn points. (value of each guess is shown below each text box)
-                li There are no limits on number of guesses!
-                li If you are not able to make a guess, click
-                    b  'Get Random Clue'
+                li Correct guesses will be shaded green and will give you 10 points. (value of each guess is shown below each text box)
+                li Incorrect guesses will be flashed in red and will earn no points
+                li Incorrect guesses that are close to the right answer will flash yellow and will earn upto 6 points.
+                li Each time you submit a guess, some new parts of the sentence will be reveled to you.
                 li This will change a part of the foreign sentence into English, either:
                     ul
                         li One (or more) of the foreign will be shown in English (in blue text)
                         li Or some words in the foreign sentence will be reordered (light blue shading)
                 li
-                    b Note:
-                    | Each time to get a random clue the value of each guess will reduce!
                 li Now you can re-evaluate your guesses and try again.
-                li Repeat this process untill you have guess all words correctly or till the entire sentence is revealed.
+                li Repeat this process until you have guess all words correctly or till the entire sentence is revealed.
 
             h4 Example:
                 br
@@ -90,8 +90,8 @@ html
             h4 Reward & Bonus
             ul
                 li  Reward for each HIT is $0.20
-                li  Bonus of $1 is awarded for completing 25 HITs
-                li  Bonus of $2 is awarded for completing 50 HITs
+                li  Bonus of $1 is awarded for earning 500 points
+                li  Bonus of $3 is awarded for earning 1000 points
                 li  If you complete more than 25 HITs you
                     b  qualify
                     |  for a
@@ -100,11 +100,12 @@ html
                 li
                     b Helpful tips:
                     ul
-                     li Fewer clues will ensure that you get more points for every correct guess.
-                     li Make a few initial guesses to get maximum points, at least for the easy words.
-                     li Harder words will earn more points, so do not give up on them!!
-                     li try and remember foreign words! They are likely to appear again.
-                     li You can hover over a clue (blue english word) to see its corresponding foreign.
+                        li Don't leave blanks or repeat the same word over and over you will lose points!
+                        li Guess the easy words first.
+                        li Always make a attempt, even if you are wrong you will get points for effort.
+                        li Incorrect guesses that are "close" to the right answer will be worth 1-6 points!
+                        li try and remember foreign words! They are likely to appear again.
+                        li You can hover over a clue (blue english word) to see its corresponding foreign.
 
 
             h4 Review & Rules:
@@ -113,7 +114,7 @@ html
                 li Please type in full english words or very short phrases (2 words).
                 li
                     b Please do not type nonsense words!!
-                li Do not look up words in a dictionary or another web site.
+                li Do not look up words in a dictionary or another web site. (you will be rejected)
 
 
 
