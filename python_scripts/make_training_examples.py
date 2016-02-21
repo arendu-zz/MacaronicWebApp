@@ -211,7 +211,7 @@ if __name__ == '__main__':
                     revealed_guesses = [rg.copy((None, None)) for rg in current_guesses if
                                         rg['revealed'] and rg['guess'].strip() != '']
                     past_correct_guesses.update(revealed_guesses)
-                    true_guesses = ''.join([g.guess for kg, g in ti.current_guesses.iteritems()])
+                    true_guesses = ''.join([g.guess for  g in ti.current_guesses])
                     if true_guesses.strip() != '':
                         print json.dumps(ti)
                     # x_ti = json.dumps(ti)
