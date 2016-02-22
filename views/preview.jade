@@ -68,9 +68,12 @@ html
                 li Guess the correct translation of each foreign word in a sentence and get points for a translation.
                 li After making intial guesses click
                     b  'Submit Guess'
-                li Correct guesses will be shaded green and will give you 10 points.
-                li Close guesses will flash yellow and will earn 1-6 points.
-                li Incorrect guesses will be flashed in red and will earn no points.
+                li Earn points for each guess:
+                    ul
+                        li Correct guesses = 10 points.
+                        li Close guesses = 1-6 points, depending on how close they are to the answer.
+                        li Incorrect guesses = 0 points
+                        li Blank, Nonsense, Repeated guesses = -1 points
                 li Each time you submit a guess, some new parts of the sentence will be reveled to you.
                 li This will change a part of the foreign sentence into English, either:
                     ul
@@ -100,9 +103,9 @@ html
                 li
                     b Helpful tips:
                     ul
-                        li Don't leave blanks or repeat the same word over and over you will lose points!
-                        li Guess the easy words first.
-                        li Always make a attempt, even if you are wrong you will get points for effort.
+                        li Repeating the same word over and over will lose points!
+                        li Its better to guess than leave blanks
+                        li Always try and make a attempt, even if you are wrong you will get points for effort.
                         li Incorrect guesses that are "close" to the right answer will be worth 1-6 points!
                         li try and remember foreign words! They are likely to appear again.
                         li You can hover over a clue (blue english word) to see its corresponding foreign.
@@ -117,17 +120,14 @@ html
                 li Do not look up words in a dictionary or another web site. (you will be rejected)
             h4 More Examples:
             ul
-                li Don't type nonsense words, or repeated words, or leave blanks
+                li Don't type nonsense words, or repeated words
                     b  (you will lose points!!)
-                li
-                    img(src='images/wrong2.png', width='50%', height='50%')
-                li
-                    img(src='images/wrong.png',width='50%', height='50%')
+                img(src='images/wrong2.png', width='50%', height='50%')
+                img(src='images/wrong.png',width='50%', height='50%')
                 li Make guesses,
                     b  even if they are not good
                     | (you will get points for effort)
-                li
-                    img(src='images/acceptable.png',width='50%', height='50%')
+                img(src='images/acceptable.png',width='50%', height='50%')
 
 
 
