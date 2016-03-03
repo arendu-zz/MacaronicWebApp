@@ -3,13 +3,18 @@ import MySQLdb
 import json
 import sys
 import codecs
+import enchant
+from editdistance import EditDistance
 from collection_of_edits import Sentence, Node, Graph, Edge, Swap
-
+from training_classes import TrainingInstance, SimpleNode, Guess
 reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 sys.stdout.encoding = 'utf-8'
+
+#spell = enchant.request_dict("en_US")
+#ed = EditDistance(None)
 
 
 def unique(seq):
@@ -24,7 +29,7 @@ def unique(seq):
             seen.add(item)
             yield item
 
-
+'''
 class TrainingInstance(dict):
     def __init__(self,
                  user_id,
@@ -63,7 +68,23 @@ class Guess(dict):
     def __init__(self, id, guess, revealed, l2_word):
         dict.__init__(self)
         self.__dict__ = self
-        self.guess = guess
+        if guess.strip() == '':
+            self.guess = '__BLANK__'
+        elif guess.strip() == '__BLANK__' or guess.strip() == '__UNK__' or guess.strip() == '__COPY__':
+            self.guess = guess.strip()
+        else:
+            if spell.check(guess):
+                self.guess = guess
+            elif float(ed.editdistance_simple(guess.lower(), l2_word.lower())[0] / float(
+                    max(len(guess), len(l2_word)))) <= 0.2:
+                self.guess = '__COPY__'
+            else:
+                suggest = spell.suggest(guess)
+                single_word = [s for s in suggest if len(s.split()) == 1]
+                if len(single_word) > 0:
+                    self.guess = single_word[0]
+                else:
+                    self.guess = '__UNK__'
         self.l2_word = l2_word
         self.id = id
         self.revealed = revealed
@@ -130,6 +151,7 @@ class SimpleNode(dict):
                        lang=_dict['lang'])
         return s
 
+'''
 
 def get_visible_nodes(sent_state):
     simple_nodes = []
@@ -211,11 +233,19 @@ if __name__ == '__main__':
                     revealed_guesses = [rg.copy((None, None)) for rg in current_guesses if
                                         rg['revealed'] and rg['guess'].strip() != '']
                     past_correct_guesses.update(revealed_guesses)
-                    true_guesses = ''.join([g.guess for  g in ti.current_guesses])
-                    if true_guesses.strip() != '':
+                    true_guesses_num = len([g.guess for g in ti.current_guesses if
+                                            g.guess.strip() != '__BLANK__' and g.guess.strip() != '__UNK__' and g.guess.strip() != '__COPY__'])
+                    gap_num = len(ti.current_guesses)
+                    ratio = float(true_guesses_num) / float(gap_num)
+                    if ratio >= 0.5:
                         print json.dumps(ti)
-                    # x_ti = json.dumps(ti)
-                    # new_ti = TrainingInstance.from_dict(json.loads(x_ti))
+                    elif ratio <= 0.5:
+                        # pdb.set_trace()
+                        pass
+                    else:
+                        pass
+                        # x_ti = json.dumps(ti)
+                        # new_ti = TrainingInstance.from_dict(json.loads(x_ti))
                 else:
                     log('skipping guess, tabbed out...')
 
