@@ -2,16 +2,18 @@ __author__ = 'arenduchintala'
 from editdistance import EditDistance
 import enchant
 import sys
+import pdb
+
 
 class TrainingInstance(dict):
     def __init__(self,
-            user_id,
-            past_correct_guesses,
-            past_sentences_seen,
-            past_guesses_for_current_sent,
-            current_sent,
-            current_revealed_guesses,
-            current_guesses):
+                 user_id,
+                 past_correct_guesses,
+                 past_sentences_seen,
+                 past_guesses_for_current_sent,
+                 current_sent,
+                 current_revealed_guesses,
+                 current_guesses):
         dict.__init__(self)
         self.__dict__ = self
         # these are the inputs
@@ -27,93 +29,87 @@ class TrainingInstance(dict):
     @staticmethod
     def from_dict(_dict):
         ti = TrainingInstance(user_id=_dict['user_id'],
-                past_correct_guesses=list(map(Guess.from_dict, _dict['past_correct_guesses'])),
-                past_sentences_seen=_dict['past_sentences_seen'],
-                past_guesses_for_current_sent=list(
-                    map(Guess.from_dict, _dict['past_guesses_for_current_sent'])),
-                current_sent=list(map(SimpleNode.from_dict, _dict['current_sent'])),
-                current_revealed_guesses=list(map(Guess.from_dict, _dict['current_revealed_guesses'])),
-                current_guesses=list(map(Guess.from_dict, _dict['current_guesses'])))
+                              past_correct_guesses=list(map(Guess.from_dict, _dict['past_correct_guesses'])),
+                              past_sentences_seen=_dict['past_sentences_seen'],
+                              past_guesses_for_current_sent=list(
+                                  map(Guess.from_dict, _dict['past_guesses_for_current_sent'])),
+                              current_sent=list(map(SimpleNode.from_dict, _dict['current_sent'])),
+                              current_revealed_guesses=list(map(Guess.from_dict, _dict['current_revealed_guesses'])),
+                              current_guesses=list(map(Guess.from_dict, _dict['current_guesses'])))
         return ti
 
+
 def check_ignore_case(w, d):
-    if d.check(w) or w in ['__UNK__', '__COPY__', '__BLANK__' , '*', '&quot;']:
+    if d.check(w) or w in ['__unk__', '__copy__', '__blank__', '*', '&quot;']:
         return True
     else:
-        s_lower = [i.lower() for i in d.suggest(w)]
+        s_lower = [i.lower().replace("'", "") for i in d.suggest(w)]
         if len(s_lower) == 0:
             return False
         else:
-            if w in s_lower or w.lower() in s_lower:
+            if w.lower() in s_lower:
                 return True
             else:
                 return False
 
-def copy_or_not(w, l2,  english_d, ed):
-    if w.lower() == l2.lower():
-        return '__COPY__', l2 , 'de'
+
+def copy_or_not(w, l2, english_d, ed):
+    '''if w.lower() == u'dienste':
+        pdb.set_trace()'''
+    w = w.lower()
+    l2 = l2.lower()
+    if w == l2:
+        return '__copy__', l2, 'de'
     else:
         pass
-    en_single_word = [s.lower() for s in english_d.suggest(w) if len(s.split()) == 1 and len(s.split('-')) == 1]
+
     if w.isdigit():
-        en_single_word = []
-    sys.stderr.write('ed for ' + w + '\n')
-    if len(en_single_word) == 0:
-        sys.stderr.write('german ed was lower, guess:' + w + ',en correction:[]' + ', german context:'+ l2 + '\n')
-        return '__COPY__', l2 , 'de'
+        best_suggestion = []
     else:
-        ed2_en = ed.editdistance_simple(w, en_single_word[0])[0]
+        lower_sugguestions = [s.lower() for s in english_d.suggest(w)]
+        best_suggestion = sorted([(ed.editdistance_simple(s, w)[0], s) for s in lower_sugguestions])[0][1]
+        best_suggestion = sorted([(len(bs), bs) for bs in best_suggestion.split()])[-1][1]
+
+    sys.stderr.write('ed for ' + w + '\n')
+    if len(best_suggestion) == 0:
+        sys.stderr.write('german ed was lower, guess:' + w + ',en correction:[]' + ', german context:' + l2 + '\n')
+        return '__copy__', l2, 'de'
+    else:
+        ed2_en = ed.editdistance_simple(w, best_suggestion)[0]
         ed2_de = ed.editdistance_simple(w, l2)[0]
         if ed2_de >= ed2_en:
-            sys.stderr.write('english ed was lower, guess:' + w + ', correction:' + en_single_word[0] + ', german context:' +l2+ '\n')
-            return en_single_word[0] , en_single_word[0] , 'en'
+            sys.stderr.write(
+                'english ed was lower, guess:' + w + ', correction:' + best_suggestion + ', german context:' + l2 + '\n')
+            return best_suggestion, best_suggestion, 'en'
         else:
-            sys.stderr.write('german ed was lower, guess:' + w + ',en correction:' + en_single_word[0] + ', german context:'+ l2 + '\n')
-            return '__COPY__', l2 , 'de'
+            sys.stderr.write(
+                'german ed was lower, guess:' + w + ',en correction:' + best_suggestion + ', german context:' + l2 + '\n')
+            return '__copy__', l2, 'de'
+
 
 class Guess(dict):
     def __init__(self, id, guess, revealed, l2_word):
         dict.__init__(self)
         self.__dict__ = self
-        Guess.spell = enchant.DictWithPWL("en_US", "../data/vocab/en.vocab")
-        Guess.spell_german = enchant.request_pwl_dict('../data/de/nachrichtenleicht-filtered/nachrichtenleicht.de.vocab')
+        Guess.spell = enchant.DictWithPWL("en_US", "../data/vocab/en.vocab.50k")
+        Guess.spell_german = enchant.request_pwl_dict(
+            '../data/de/nachrichtenleicht-filtered/nachrichtenleicht.de.vocab')
         Guess.ed = EditDistance(None)
         tmp_l2_lower = l2_word.lower()
         if guess.strip() == '':
-            self.guess = '__BLANK__'
-        elif guess.strip() == '__BLANK__' or guess.strip() == '__UNK__' or guess.strip() == '__COPY__':
+            self.guess = '__blank__'
+        elif guess.strip().lower() == '__blank__' or guess.strip().lower() == '__unk__' or guess.strip().lower() == '__copy__':
             self.guess = guess
         else:
-            guess = sorted([(len(g),g) for g in guess.split()])[-1][1]
+            if len(guess.split()) > 1:
+                sys.stderr.write("phrasal guess:" + guess + '\n')
+            guess = sorted([(len(g), g) for g in guess.split()])[-1][1]
             guess = guess[:-1] if guess[-1] == '*' and len(guess) > 1 else guess
             if check_ignore_case(guess, Guess.spell):
-                self.guess = guess
+                self.guess = guess.lower().replace("'", "")
             else:
-                result = copy_or_not(guess,tmp_l2_lower, Guess.spell, Guess.ed)
-                self.guess = result[0]
-            '''
-            elif tmp_l2_lower in [s.lower() for s in Guess.spell_german.suggest(guess)] or tmp_l2_lower == guess.lower():
-                sys.stderr.write('not in en dict:' + guess + '\n')
-                sys.stderr.write('changing:' + guess + ' to __COPY__ , very similar to l2_word:'  + tmp_l2_lower + '\n')
-                self.guess = '__COPY__'
-            else:
-                sys.stderr.write('not in en dict:' + guess + ' and not copy of:' + tmp_l2_lower +'\n')
-                suggest = Guess.spell.suggest(guess)
-                single_word = [s.lower() for s in suggest if len(s.split()) == 1 and len(s.split('-')) == 1]
-                if len(single_word) > 0:
-                    if guess.isdigit() and not single_word[0].isdigit():
-                        sys.stderr.write('no good suggestion for:' + guess + '\n')
-                        self.guess = guess
-                    else:
-                        sys.stderr.write('spell correcting:' + guess + ' to:' + single_word[0] +'\n')
-                        self.guess = single_word[0]
-                else:
-                    sys.stderr.write('setting UNK:' + guess + '\n')
-                    self.guess = '__UNK__'
-                '''
-        import pdb
-        if self.guess == 'wierd':
-            pdb.set_trace()
+                result = copy_or_not(guess, tmp_l2_lower, Guess.spell, Guess.ed)
+                self.guess = result[0].lower().replace("'", "")
         self.l2_word = l2_word
         self.id = id
         self.revealed = revealed
@@ -141,12 +137,13 @@ class Guess(dict):
             return 1
         else:
             return -1
+
     @staticmethod
     def from_dict(_dict):
         g = Guess(id=tuple(_dict['id']),
-                guess=_dict['guess'],
-                revealed=_dict['revealed'],
-                l2_word=_dict['l2_word'])
+                  guess=_dict['guess'],
+                  revealed=_dict['revealed'],
+                  l2_word=_dict['l2_word'])
         return g
 
 
@@ -156,8 +153,14 @@ class SimpleNode(dict):
         self.__dict__ = self
         self.sent_id = sent_id
         self.id = id
-        self.l2_word = l2_word
-        self.l1_parent = l1_parent
+        if lang == 'en':
+            self.l2_word = l2_word.lower().replace("'", "")
+        else:
+            self.l2_word = l2_word
+        if lang == 'de':
+            self.l1_parent = l1_parent.lower().replace("'", "")
+        else:
+            self.l1_parent = l1_parent
         self.position = int(position)
         self.lang = lang
 
@@ -172,9 +175,9 @@ class SimpleNode(dict):
     @staticmethod
     def from_dict(_dict):
         s = SimpleNode(sent_id=_dict['sent_id'],
-                id=tuple(_dict['id']),
-                l2_word=_dict['l2_word'],
-                l1_parent=_dict['l1_parent'],
-                position=_dict['position'],
-                lang=_dict['lang'])
+                       id=tuple(_dict['id']),
+                       l2_word=_dict['l2_word'],
+                       l1_parent=_dict['l1_parent'],
+                       position=_dict['position'],
+                       lang=_dict['lang'])
         return s

@@ -1,3 +1,4 @@
+
 __author__ = 'arenduchintala'
 import MySQLdb
 import json
@@ -234,7 +235,7 @@ if __name__ == '__main__':
                                         rg['revealed'] and rg['guess'].strip() != '']
                     past_correct_guesses.update(revealed_guesses)
                     true_guesses_num = len([g.guess for g in ti.current_guesses if
-                                            g.guess.strip() != '__BLANK__' and g.guess.strip() != '__UNK__' and g.guess.strip() != '__COPY__'])
+                                            g.guess.strip() != '__blank__' and g.guess.strip() != '__unk__' and g.guess.strip() != '__copy__'])
                     gap_num = len(ti.current_guesses)
                     ratio = float(true_guesses_num) / float(gap_num)
                     if ratio >= 0.5:
