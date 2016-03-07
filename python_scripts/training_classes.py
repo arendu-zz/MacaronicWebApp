@@ -66,8 +66,12 @@ def copy_or_not(w, l2, english_d, ed):
     if w.isdigit():
         best_suggestion = []
     else:
-        lower_sugguestions = [s.lower() for s in english_d.suggest(w)]
-        best_suggestion = sorted([(ed.editdistance_simple(s, w)[0], s) for s in lower_sugguestions])[0][1]
+        try:
+            lower_sugguestions = [s.lower() for s in english_d.suggest(w)]
+            best_suggestion = sorted([(ed.editdistance_simple(s, w)[0], s) for s in lower_sugguestions])[0][1]
+        except IndexError:
+            sys.stderr.write('no suggestions for: ' + w + ',' + l2 + ',' + ' '.join(lower_sugguestions) + '\n')
+            return '__copy__', l2, 'de'
         best_suggestion = sorted([(len(bs), bs) for bs in best_suggestion.split()])[-1][1]
 
     sys.stderr.write('ed for ' + w + '\n')
