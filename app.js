@@ -87,7 +87,7 @@ app.use(route.notFound404);
 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var JsonSentences = require('./stories/jsonsentences')
+var JsonSentences = require('./stories/nachrichtenleicht.de')
 
 io.on('connection', function (socket) {
 	var clientId = socket.id
