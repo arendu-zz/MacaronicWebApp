@@ -1,6 +1,7 @@
 doctype
 html
     head
+        title #{title}
         link(type='text/css', rel='stylesheet', href='/MacaronicParseUI/css/coe.css')
         link(type='text/css', rel='stylesheet', href='/shell/css/style.css')
         script(type='text/javascript', src='/MacaronicParseUI/js/jquery-1.11.3.min.js')
@@ -19,18 +20,24 @@ html
         script(type='text/javascript', src='/MacaronicParseUI/js/word-options.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/glove.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/similarity.js')
-        title #{title}
+        script.
+            $(document).ready(function () {
+                var socket = io();
+                setup($('#mainbody'), "#{user.username}", socket, "#{file_path}")
+            });
+            var unescapeHTML = function(safe_str){
+                return 'hello'
+            }
+
     body.bodygrad
         #menu.banner
-            h2 Select Content #{title}
+            h2 Home Page #{data}
         ul
             li
                 | Logged in as:
                 strong #{user.displayname}
             li
-                a(href='/signout', title='sign out XXXXXXX') sign out
-        each f in file_list
-          form(method='post', action='/content')
-            input#path(type='hidden', name='file_path', value='#{f.path}')
-            input#content.looklikelink(type='submit', name='file_name', value='#{f.name}')
-            br
+                a(href='/signout', title='sign out') sign out
+        #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
+
+

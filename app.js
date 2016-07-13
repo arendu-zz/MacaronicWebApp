@@ -6,6 +6,8 @@ var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
 var passport = require('passport');
 var _ = require('underscore');
+var fs = require('fs');
+
 var LocalStrategy = require('passport-local').Strategy;
 
 // routes
@@ -52,7 +54,7 @@ passport.deserializeUser(function (username, done) {
 	});
 });
 
-app.set('port', process.env.PORT || 3030);
+app.set('port', process.env.PORT || 8001);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.static(__dirname + '/public/'));
@@ -64,6 +66,8 @@ app.use(passport.session());
 
 // GET
 app.get('/', route.index);
+//POST
+app.post('/', route.indexPost);
 
 // signin
 // GET
@@ -77,6 +81,12 @@ app.get('/signup', route.signUp);
 // POST
 app.post('/signup', route.signUpPost);
 
+// content
+// GET
+app.get('/content', route.content);
+// POST
+app.post('/content', route.contentPost);
+
 // logout
 // GET
 app.get('/signout', route.signOut);
@@ -87,22 +97,34 @@ app.use(route.notFound404);
 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var JsonSentences = require('./stories/nachrichtenleicht.de')
+var JsonSentences = require('./stories/nachrichtenleicht.de.js')
+
+var loadJsonContent = function (file_path, successCallback) {
+	var jsonObj;
+  console.log(file_path + ' is going to be read...');
+	fs.readFile(file_path, 'utf8', function (err, data) {
+		if (err) throw err;
+		jsonObj = JSON.parse(data);
+		successCallback(jsonObj);
+	});
+};
 
 io.on('connection', function (socket) {
 	var clientId = socket.id
 	console.log("connected to client..." + clientId)
 	socket.on('logEvent', function (msg) {
 		new Model.Records(msg).save().then(function (data) {
-			console.log("record status:" + data.attributes.id)
+			console.log("record status:" + data.attributes.id);
 		});
-		//io.to(clientId).emit('chat message', msg);
 	});
 
-	socket.on('requestJsonSentences', function (msg) {
-		console.log('sending data to client...')
-		io.to(clientId).emit('JsonSentences', JsonSentences.Story1)
-	})
+	socket.on('requestJsonSentences', function (fileObj) {
+		console.log('client requested data in file...' + fileObj.file_path)
+		loadJsonContent(fileObj.file_path, function (jsonObj) {
+			io.to(clientId).emit('JsonSentences', jsonObj)
+
+		});
+	});
 });
 
 var server = http.listen(app.get('port'), function (err) {
