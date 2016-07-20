@@ -21,7 +21,7 @@ var readFiles = function(successCallback) {
 
     walker.on('file', function(root, stat, next) {
         var f = {
-            'name': stat.name,
+            'name': stat.name.replace('.json', '').replace('@-@', '-'),
             'path': root + '/' + stat.name
         };
         file_list.push(f);
