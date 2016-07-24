@@ -4,6 +4,7 @@ html
         title #{title}
         link(type='text/css', rel='stylesheet', href='/MacaronicParseUI/css/coe.css')
         link(type='text/css', rel='stylesheet', href='/shell/css/style.css')
+        link(href='http://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css', type='text/css', rel='stylesheet')
         script(type='text/javascript', src='/MacaronicParseUI/js/jquery-1.11.3.min.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/socket.io.js')
         script(type='text/javascript', src='/MacaronicParseUI/js/messages.js')
@@ -22,6 +23,20 @@ html
         script(type='text/javascript', src='/MacaronicParseUI/js/similarity.js')
         script.
             $(document).ready(function () {
+                if (jQuery.ui) {
+                $("#slider").slider({
+                                        step: 2, min: 0, max: 1000, slide: function (e, ui) {
+                        sliderMoving(ui.value)
+
+                    }, change: function (e, ui) {
+                        sliderUp(ui.value)
+                        console.log("stopped:", ui.value)
+                    }
+                                    })
+            } else {
+                alert("no jquery ui")
+            }
+            $("#slider").slider('value', 1000);
                 var socket = io();
                 setup($('#mainbody'), "#{user.username}", socket, "#{file_path}")
             });
@@ -38,6 +53,7 @@ html
                 strong #{user.displayname}
             li
                 a(href='/signout', title='sign out') sign out
+        #slider
         #mainbody(style='margin-bottom:20;margin-top:20;margin-left:20;margin-right:20;')
         a(href='/', title='Home Page') back
 

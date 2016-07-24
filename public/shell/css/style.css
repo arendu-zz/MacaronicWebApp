@@ -2,6 +2,12 @@ html {
     height: 100%;
 }
 
+#slider {
+    max-width: 150px;
+    margin: 0 auto;
+    text-align: center;
+}
+
 .bodygrad {
     height: 100%;
     margin-left: 20;
