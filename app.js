@@ -54,7 +54,7 @@ passport.deserializeUser(function (username, done) {
 	});
 });
 
-app.set('port', process.env.PORT || 8001);
+app.set('port', process.env.PORT || 8002);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.static(__dirname + '/public/'));
