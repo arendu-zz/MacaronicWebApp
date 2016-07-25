@@ -29,8 +29,10 @@ html
                     strong #{user.displayname}
                 li
                     a(href='/signout', title='sign out XXXXXXX') sign out
-        each f in file_list
-          form(method='post', action='/content')
-            input#path(type='hidden', name='file_path', value='#{f.path}')
-            input#content.looklikelink(type='submit', name='file_name', value='#{f.name}')
-            br
+        each val,key in file_list
+          h3 #{key}
+          each f in val
+              form(method='post', action='/content')
+                input#path(type='hidden', name='file_path', value='#{f.path}')
+                input#content.looklikelink(type='submit', name='file_name', value='#{f.name}')
+                br
