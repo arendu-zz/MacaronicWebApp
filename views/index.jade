@@ -23,12 +23,12 @@ html
     body.bodygrad
         #menu.banner
             h2 Select Content #{title}
-        ul
-            li
-                | Logged in as:
-                strong #{user.displayname}
-            li
-                a(href='/signout', title='sign out XXXXXXX') sign out
+            ul
+                li
+                    | Logged in as:
+                    strong #{user.displayname}
+                li
+                    a(href='/signout', title='sign out XXXXXXX') sign out
         each f in file_list
           form(method='post', action='/content')
             input#path(type='hidden', name='file_path', value='#{f.path}')
