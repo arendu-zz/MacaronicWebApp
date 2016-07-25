@@ -9,7 +9,7 @@ var fs = require('fs')
 var Model = require('./model');
 
 var readFiles = function(successCallback) {
-    var file_list = [];
+    var file_list = {};
     var walker = walk.walk('./stories/individual', {
         followLinks: false
     });
@@ -20,11 +20,22 @@ var readFiles = function(successCallback) {
     });
 
     walker.on('file', function(root, stat, next) {
+        var n = stat.name.split('.')
+        var category = n[0]
+        console.log(category)
+        var fl = file_list[category]
+        console.log(fl)
         var f = {
-            'name': stat.name.replace('.json', '').replace('@-@', '-'),
+            'name': n[1].replace('@-@', '-'),
             'path': root + '/' + stat.name
         };
-        file_list.push(f);
+        if (fl == null){
+          fl =[f]
+        }else{
+            fl.push(f);
+        }
+        //file_list.push(f);
+        file_list[category] = fl
         next();
     });
 };
