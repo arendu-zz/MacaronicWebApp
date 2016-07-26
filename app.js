@@ -103,9 +103,13 @@ var loadJsonContent = function (file_path, successCallback) {
 	var jsonObj;
   console.log(file_path + ' is going to be read...');
 	fs.readFile(file_path, 'utf8', function (err, data) {
-		if (err) throw err;
+		if (err) {
+		console.log('loading content error');
+		console.log(err);
+		}else{
 		jsonObj = JSON.parse(data);
 		successCallback(jsonObj);
+		}	
 	});
 };
 
