@@ -5,7 +5,7 @@
    "author": "",
    "main": "app.js",
    "dependencies": {
-      "underscore" :"*",
+      "underscore": "*",
       "socket.io": "*",
       "express": "4.x",
       "body-parser": "*",
