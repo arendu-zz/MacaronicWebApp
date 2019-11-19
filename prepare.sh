@@ -5,7 +5,8 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 PASSWORD=$1
-npm install
+npm ci #uses package.lock.json
+#npm install # uses package.json
 sed  "s/var config.*/var config = {host:'localhost', user:'macaronic_admin', password:'$PASSWORD', database:'macaronicdb'};/g" db_ref.js > db.js
 MYSQLVER=$(mysql --help | grep Ver | head -1 | awk '{print $5}' | sed 's/,//g')
 sed "s/IDENTIFIED BY.*/IDENTIFIED BY '$PASSWORD';/g" schema_macaronic.sql > tmp 
