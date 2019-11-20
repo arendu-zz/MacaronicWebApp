@@ -4,7 +4,7 @@ if [ "$#" -ne 2 ]; then
     echo "Usage: $0 USERNAME PASSWORD for mysql (if running on www then use the password carl setup)" >&2
     exit 1
 fi
-PASSWORD=$1
+USERNAME=$1
 PASSWORD=$2
 npm i package-lock.json #uses package.lock.json
 #npm install # uses package.json
