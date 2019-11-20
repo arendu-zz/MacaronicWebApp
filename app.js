@@ -131,7 +131,7 @@ io.on('connection', function (socket) {
 	});
 });
 
-var server = http.listen(app.get('port'), function (err) {
+var server = http.listen(app.get('port'), "0.0.0.0", function (err) {
 	if (err) throw err;
 	var message = 'Server is running @ http://localhost:' + server.address().port;
 	console.log(message);
